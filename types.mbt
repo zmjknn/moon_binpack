@@ -1,6 +1,6 @@
 ///|
 /// Represents a 2D size with integer width and height.
-pub struct Size {
+pub(all) struct Size {
   width : Int
   height : Int
 } derive(Eq, Debug, Default)
@@ -17,7 +17,7 @@ pub fn area(self : Size) -> Int {
 
 ///|
 /// Represents a target bin with width and height boundaries.
-pub struct Bin {
+pub(all) struct Bin {
   width : Int
   height : Int
 } derive(Eq, Debug, Default)
@@ -35,7 +35,7 @@ pub fn area(self : Bin) -> Int {
 ///|
 /// Represents a 2D rectangle with position (x, y), dimensions (width, height),
 /// an optional identifier, rotation flag, and bin page index.
-pub struct Rect {
+pub(all) struct Rect {
   x : Int
   y : Int
   width : Int
@@ -112,7 +112,7 @@ pub fn intersection(self : Rect, other : Rect) -> Rect? {
 
 ///|
 /// Heuristic options for MaxRects bin packing algorithm.
-pub enum MaxRectsHeuristic {
+pub(all) enum MaxRectsHeuristic {
   BestShortSideFit
   BestLongSideFit
   BestAreaFit
@@ -122,7 +122,7 @@ pub enum MaxRectsHeuristic {
 
 ///|
 /// Free rectangle choice heuristics for Guillotine bin packing algorithm.
-pub enum GuillotineHeuristic {
+pub(all) enum GuillotineHeuristic {
   BestAreaFit
   BestShortSideFit
   BestLongSideFit
@@ -133,7 +133,7 @@ pub enum GuillotineHeuristic {
 
 ///|
 /// Split heuristics for Guillotine cut algorithm.
-pub enum SplitHeuristic {
+pub(all) enum SplitHeuristic {
   ShorterLeftoverAxis
   LongerLeftoverAxis
   MinimizeArea
@@ -144,7 +144,7 @@ pub enum SplitHeuristic {
 
 ///|
 /// Heuristics for Shelf bin packing algorithm.
-pub enum ShelfHeuristic {
+pub(all) enum ShelfHeuristic {
   NextFit
   FirstFit
   BestAreaFit
@@ -154,7 +154,7 @@ pub enum ShelfHeuristic {
 
 ///|
 /// Packing performance and occupancy statistics.
-pub struct PackingStats {
+pub(all) struct PackingStats {
   total_items : Int
   packed_items : Int
   unpacked_items : Int
