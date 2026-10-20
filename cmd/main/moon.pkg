@@ -1,5 +1,5 @@
 import {
-  "geqain/moon_binpack" @lib,
+  "zmjknn/moon_binpack" @lib,
 }
 
 pkgtype(kind: "executable")

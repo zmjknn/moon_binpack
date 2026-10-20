@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20261016-purple.svg)](https://www.moonbitlang.com)
-[![CI](https://github.com/geqain/moon_binpack/actions/workflows/ci.yml/badge.svg)](https://github.com/geqain/moon_binpack/actions/workflows/ci.yml)
+[![CI](https://github.com/zmjknn/moon_binpack/actions/workflows/ci.yml/badge.svg)](https://github.com/zmjknn/moon_binpack/actions/workflows/ci.yml)
 
 **`moon_binpack`** is an industrial-grade, zero-dependency 2D rectangle bin packing and texture atlas layout engine implemented in 100% pure [MoonBit](https://www.moonbitlang.com).
 
@@ -46,14 +46,14 @@ It solves the classic NP-hard 2D Bin Packing Problem (2D-BPP), providing industr
 Add `moon_binpack` to your MoonBit project:
 
 ```bash
-moon add geqain/moon_binpack
+moon add zmjknn/moon_binpack
 ```
 
 Or declare it in your `moon.mod`:
 
 ```moonbit
 import {
-  "geqain/moon_binpack",
+  "zmjknn/moon_binpack",
 }
 ```
 
@@ -119,7 +119,7 @@ let json = @moon_binpack.to_json(512, 512, packed)
 Clone the repository and run the interactive CLI demo:
 
 ```bash
-git clone https://github.com/geqain/moon_binpack.git
+git clone https://github.com/zmjknn/moon_binpack.git
 cd moon_binpack
 moon run cmd/main
 ```

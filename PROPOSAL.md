@@ -2,8 +2,8 @@
 
 ## 基本信息
 - **项目名称**：`moon_binpack`：工业级二维矩形装箱与纹理图集布局引擎
-- **参赛者**：geqain
-- **GitHub 仓库链接**：https://github.com/geqain/moon_binpack
+- **参赛者**：zmjknn
+- **GitHub 仓库链接**：https://github.com/zmjknn/moon_binpack
 - **项目方向**：MoonBit 算法基础库 / 图形与排版基础设施
 - **是否为移植项目**：是
 - **参考开源项目**：

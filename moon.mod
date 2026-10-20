@@ -1,10 +1,10 @@
-name = "geqain/moon_binpack"
+name = "zmjknn/moon_binpack"
 
 version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/geqain/moon_binpack"
+repository = "https://github.com/zmjknn/moon_binpack"
 
 license = "Apache-2.0"
 
