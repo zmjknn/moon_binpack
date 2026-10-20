@@ -27,8 +27,8 @@ jobs:
       - name: Run all test suites
         run: moon test
 
-      - name: Build executable
-        run: moon bundle
+      - name: Build project
+        run: moon build
 
       - name: Run CLI demonstration
         run: moon run cmd/main
