@@ -11,7 +11,7 @@ pub fn Size::new(width : Int, height : Int) -> Size {
 }
 
 ///|
-pub fn area(self : Size) -> Int {
+pub fn Size::area(self : Size) -> Int {
   self.width * self.height
 }
 
@@ -28,7 +28,7 @@ pub fn Bin::new(width : Int, height : Int) -> Bin {
 }
 
 ///|
-pub fn area(self : Bin) -> Int {
+pub fn Bin::area(self : Bin) -> Int {
   self.width * self.height
 }
 
@@ -59,28 +59,28 @@ pub fn Rect::new(
 }
 
 ///|
-pub fn area(self : Rect) -> Int {
+pub fn Rect::area(self : Rect) -> Int {
   self.width * self.height
 }
 
 ///|
-pub fn right(self : Rect) -> Int {
+pub fn Rect::right(self : Rect) -> Int {
   self.x + self.width
 }
 
 ///|
-pub fn bottom(self : Rect) -> Int {
+pub fn Rect::bottom(self : Rect) -> Int {
   self.y + self.height
 }
 
 ///|
-pub fn perimeter(self : Rect) -> Int {
+pub fn Rect::perimeter(self : Rect) -> Int {
   2 * (self.width + self.height)
 }
 
 ///|
 /// Returns true if this rectangle completely contains `other`.
-pub fn contains(self : Rect, other : Rect) -> Bool {
+pub fn Rect::contains(self : Rect, other : Rect) -> Bool {
   self.x <= other.x &&
   self.y <= other.y &&
   self.right() >= other.right() &&
@@ -89,7 +89,7 @@ pub fn contains(self : Rect, other : Rect) -> Bool {
 
 ///|
 /// Returns true if this rectangle intersects with `other` (strict overlap with non-zero area).
-pub fn intersects(self : Rect, other : Rect) -> Bool {
+pub fn Rect::intersects(self : Rect, other : Rect) -> Bool {
   self.x < other.right() &&
   self.right() > other.x &&
   self.y < other.bottom() &&
@@ -98,7 +98,7 @@ pub fn intersects(self : Rect, other : Rect) -> Bool {
 
 ///|
 /// Computes the intersection rectangle between `self` and `other`, if one exists.
-pub fn intersection(self : Rect, other : Rect) -> Rect? {
+pub fn Rect::intersection(self : Rect, other : Rect) -> Rect? {
   let nx = if self.x > other.x { self.x } else { other.x }
   let ny = if self.y > other.y { self.y } else { other.y }
   let nr = if self.right() < other.right() { self.right() } else { other.right() }

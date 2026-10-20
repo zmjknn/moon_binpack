@@ -1,20 +1,20 @@
 test "atlas_packer_auto_grow" {
-  let opts = AtlasOptions::{
+  let opts = @moon_binpack.AtlasOptions::{
     max_width: 1024,
     max_height: 1024,
     padding: 2,
     border_padding: 2,
     allow_rotation: true,
     auto_grow_pot: true,
-    heuristic: MaxRectsHeuristic::BestShortSideFit,
+    heuristic: @moon_binpack.MaxRectsHeuristic::BestShortSideFit,
   }
 
-  let packer = AtlasPacker::new(options=opts)
+  let packer = @moon_binpack.AtlasPacker::new(options=opts)
   let items = [
-    Size::new(40, 40),
-    Size::new(50, 30),
-    Size::new(20, 20),
-    Size::new(30, 40),
+    @moon_binpack.Size::new(40, 40),
+    @moon_binpack.Size::new(50, 30),
+    @moon_binpack.Size::new(20, 20),
+    @moon_binpack.Size::new(30, 40),
   ]
 
   let res = packer.pack(items)
@@ -35,21 +35,21 @@ test "atlas_packer_auto_grow" {
 
 test "atlas_packer_multi_bin_overflow" {
   // Bins are small (60x60). 4 items of 50x50 can't fit into one 60x60 bin
-  let opts = AtlasOptions::{
+  let opts = @moon_binpack.AtlasOptions::{
     max_width: 60,
     max_height: 60,
     padding: 0,
     border_padding: 0,
     allow_rotation: false,
     auto_grow_pot: false,
-    heuristic: MaxRectsHeuristic::BestShortSideFit,
+    heuristic: @moon_binpack.MaxRectsHeuristic::BestShortSideFit,
   }
 
-  let packer = AtlasPacker::new(options=opts)
+  let packer = @moon_binpack.AtlasPacker::new(options=opts)
   let items = [
-    Size::new(50, 50),
-    Size::new(50, 50),
-    Size::new(50, 50),
+    @moon_binpack.Size::new(50, 50),
+    @moon_binpack.Size::new(50, 50),
+    @moon_binpack.Size::new(50, 50),
   ]
 
   let res = packer.pack(items)

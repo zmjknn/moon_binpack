@@ -1,5 +1,5 @@
 test "guillotine_basic_insertion" {
-  let packer = GuillotinePacker::new(100, 100)
+  let packer = @moon_binpack.GuillotinePacker::new(100, 100)
 
   let r1 = packer.insert(40, 40, id=1)
   assert_true(r1 != None)
@@ -33,15 +33,15 @@ test "guillotine_basic_insertion" {
 }
 
 test "guillotine_heuristics_and_rotation" {
-  let packer = GuillotinePacker::new(100, 100)
+  let packer = @moon_binpack.GuillotinePacker::new(100, 100)
 
   // A 80x20 item can fit normally or rotated
   let r = packer.insert(
     20,
     80,
     id=1,
-    rect_choice=GuillotineHeuristic::BestShortSideFit,
-    split_method=SplitHeuristic::ShorterLeftoverAxis,
+    rect_choice=@moon_binpack.GuillotineHeuristic::BestShortSideFit,
+    split_method=@moon_binpack.SplitHeuristic::ShorterLeftoverAxis,
   )
   assert_true(r != None)
 
@@ -49,8 +49,8 @@ test "guillotine_heuristics_and_rotation" {
     50,
     50,
     id=2,
-    rect_choice=GuillotineHeuristic::BestAreaFit,
-    split_method=SplitHeuristic::LongerAxis,
+    rect_choice=@moon_binpack.GuillotineHeuristic::BestAreaFit,
+    split_method=@moon_binpack.SplitHeuristic::LongerAxis,
   )
   assert_true(r2 != None)
 

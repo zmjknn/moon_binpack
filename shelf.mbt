@@ -28,17 +28,17 @@ pub fn ShelfPacker::new(bin_width : Int, bin_height : Int) -> ShelfPacker {
 }
 
 ///|
-pub fn bin_width(self : ShelfPacker) -> Int {
+pub fn ShelfPacker::bin_width(self : ShelfPacker) -> Int {
   self.bin_width
 }
 
 ///|
-pub fn bin_height(self : ShelfPacker) -> Int {
+pub fn ShelfPacker::bin_height(self : ShelfPacker) -> Int {
   self.bin_height
 }
 
 ///|
-pub fn occupancy(self : ShelfPacker) -> Double {
+pub fn ShelfPacker::occupancy(self : ShelfPacker) -> Double {
   let total = self.bin_width * self.bin_height
   if total > 0 {
     self.used_surface_area.to_double() / total.to_double()
@@ -49,18 +49,18 @@ pub fn occupancy(self : ShelfPacker) -> Double {
 
 ///|
 /// Attempts to insert a rectangle of dimensions (width, height) using the specified heuristic.
-pub fn insert(
+pub fn ShelfPacker::insert(
   self : ShelfPacker,
   width : Int,
   height : Int,
   id~ : Int = 0,
-  method~ : ShelfHeuristic = ShelfHeuristic::BestAreaFit
+  heuristic~ : ShelfHeuristic = ShelfHeuristic::BestAreaFit
 ) -> Rect? {
   if width <= 0 || height <= 0 || width > self.bin_width || height > self.bin_height {
     return None
   }
 
-  match method {
+  match heuristic {
     NextFit => self.insert_next_fit(width, height, id)
     FirstFit => self.insert_first_fit(width, height, id)
     BestAreaFit => self.insert_best_area_fit(width, height, id)
@@ -70,7 +70,7 @@ pub fn insert(
 }
 
 ///|
-fn insert_next_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_next_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
   if self.shelves.length() > 0 {
     let last = self.shelves[self.shelves.length() - 1]
     if last.x + width <= self.bin_width && height <= last.height {
@@ -95,7 +95,7 @@ fn insert_next_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> R
 }
 
 ///|
-fn insert_first_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_first_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
   for shelf in self.shelves {
     if shelf.x + width <= self.bin_width && height <= shelf.height {
       let r = Rect::new(shelf.x, shelf.y, width, height, id~)
@@ -119,7 +119,7 @@ fn insert_first_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> 
 }
 
 ///|
-fn insert_best_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_best_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
   let mut best_index = -1
   let mut min_remaining_area = 2147483647
 
@@ -153,7 +153,7 @@ fn insert_best_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int)
 }
 
 ///|
-fn insert_best_height_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_best_height_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
   let mut best_index = -1
   let mut min_height_diff = 2147483647
 
@@ -187,7 +187,7 @@ fn insert_best_height_fit(self : ShelfPacker, width : Int, height : Int, id : In
 }
 
 ///|
-fn insert_worst_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_worst_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
   let mut best_index = -1
   let mut max_remaining_area = -1
 

@@ -19,22 +19,22 @@ pub fn MaxRectsPacker::new(bin_width : Int, bin_height : Int) -> MaxRectsPacker 
 }
 
 ///|
-pub fn bin_width(self : MaxRectsPacker) -> Int {
+pub fn MaxRectsPacker::bin_width(self : MaxRectsPacker) -> Int {
   self.bin_width
 }
 
 ///|
-pub fn bin_height(self : MaxRectsPacker) -> Int {
+pub fn MaxRectsPacker::bin_height(self : MaxRectsPacker) -> Int {
   self.bin_height
 }
 
 ///|
-pub fn used_rectangles(self : MaxRectsPacker) -> Array[Rect] {
+pub fn MaxRectsPacker::used_rectangles(self : MaxRectsPacker) -> Array[Rect] {
   self.used_rectangles
 }
 
 ///|
-pub fn occupancy(self : MaxRectsPacker) -> Double {
+pub fn MaxRectsPacker::occupancy(self : MaxRectsPacker) -> Double {
   let total = self.bin_width * self.bin_height
   let mut used = 0
   for r in self.used_rectangles {
@@ -49,19 +49,19 @@ pub fn occupancy(self : MaxRectsPacker) -> Double {
 
 ///|
 /// Inserts a rectangle with dimensions (width, height) using the specified heuristic.
-pub fn insert(
+pub fn MaxRectsPacker::insert(
   self : MaxRectsPacker,
   width : Int,
   height : Int,
   id~ : Int = 0,
-  method~ : MaxRectsHeuristic = MaxRectsHeuristic::BestShortSideFit,
+  heuristic~ : MaxRectsHeuristic = MaxRectsHeuristic::BestShortSideFit,
   allow_rotation~ : Bool = true
 ) -> Rect? {
   if width <= 0 || height <= 0 {
     return None
   }
 
-  let (best_node, best_score1, best_score2) = match method {
+  let (best_node, best_score1, best_score2) = match heuristic {
     BestShortSideFit => self.find_best_short_side_fit(width, height, allow_rotation)
     BestLongSideFit => self.find_best_long_side_fit(width, height, allow_rotation)
     BestAreaFit => self.find_best_area_fit(width, height, allow_rotation)
@@ -93,7 +93,7 @@ pub fn insert(
 }
 
 ///|
-fn find_best_short_side_fit(
+fn MaxRectsPacker::find_best_short_side_fit(
   self : MaxRectsPacker,
   width : Int,
   height : Int,
@@ -137,7 +137,7 @@ fn find_best_short_side_fit(
 }
 
 ///|
-fn find_best_long_side_fit(
+fn MaxRectsPacker::find_best_long_side_fit(
   self : MaxRectsPacker,
   width : Int,
   height : Int,
@@ -181,7 +181,7 @@ fn find_best_long_side_fit(
 }
 
 ///|
-fn find_best_area_fit(
+fn MaxRectsPacker::find_best_area_fit(
   self : MaxRectsPacker,
   width : Int,
   height : Int,
@@ -225,7 +225,7 @@ fn find_best_area_fit(
 }
 
 ///|
-fn find_bottom_left(
+fn MaxRectsPacker::find_bottom_left(
   self : MaxRectsPacker,
   width : Int,
   height : Int,
@@ -261,7 +261,7 @@ fn find_bottom_left(
 }
 
 ///|
-fn find_contact_point(
+fn MaxRectsPacker::find_contact_point(
   self : MaxRectsPacker,
   width : Int,
   height : Int,
@@ -292,7 +292,7 @@ fn find_contact_point(
 }
 
 ///|
-fn contact_point_score(self : MaxRectsPacker, x : Int, y : Int, w : Int, h : Int) -> Int {
+fn MaxRectsPacker::contact_point_score(self : MaxRectsPacker, x : Int, y : Int, w : Int, h : Int) -> Int {
   let mut score = 0
   if x == 0 || x + w == self.bin_width {
     score = score + h
@@ -318,7 +318,7 @@ fn contact_point_score(self : MaxRectsPacker, x : Int, y : Int, w : Int, h : Int
 }
 
 ///|
-fn split_free_rectangles(self : MaxRectsPacker, placed : Rect) -> Unit {
+fn MaxRectsPacker::split_free_rectangles(self : MaxRectsPacker, placed : Rect) -> Unit {
   let new_free = []
   let mut i = 0
 
@@ -354,7 +354,7 @@ fn split_free_rectangles(self : MaxRectsPacker, placed : Rect) -> Unit {
 }
 
 ///|
-fn prune_free_rectangles(self : MaxRectsPacker) -> Unit {
+fn MaxRectsPacker::prune_free_rectangles(self : MaxRectsPacker) -> Unit {
   let mut i = 0
   while i < self.free_rectangles.length() {
     let mut j = i + 1
@@ -377,7 +377,7 @@ fn prune_free_rectangles(self : MaxRectsPacker) -> Unit {
       }
     }
 
-    if not(removed) {
+    if !removed {
       i = i + 1
     }
   }
@@ -385,10 +385,10 @@ fn prune_free_rectangles(self : MaxRectsPacker) -> Unit {
 
 ///|
 /// Packs an array of sizes into the bin with pre-sorting by area descending.
-pub fn insert_batch(
+pub fn MaxRectsPacker::insert_batch(
   self : MaxRectsPacker,
   sizes : Array[Size],
-  method~ : MaxRectsHeuristic = MaxRectsHeuristic::BestShortSideFit,
+  heuristic~ : MaxRectsHeuristic = MaxRectsHeuristic::BestShortSideFit,
   allow_rotation~ : Bool = true
 ) -> (Array[Rect], Array[Size]) {
   // Copy and sort by area descending
@@ -413,7 +413,7 @@ pub fn insert_batch(
 
   for item in indexed {
     let (sz, orig_id) = item
-    match self.insert(sz.width, sz.height, id=orig_id, method~, allow_rotation~) {
+    match self.insert(sz.width, sz.height, id=orig_id, heuristic~, allow_rotation~) {
       Some(r) => packed.push(r)
       None => unpacked.push(sz)
     }

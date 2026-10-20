@@ -33,7 +33,7 @@ fn main {
 
   let (packed, unpacked) = packer.insert_batch(
     items,
-    method=@lib.MaxRectsHeuristic::BestShortSideFit,
+    heuristic=@lib.MaxRectsHeuristic::BestShortSideFit,
     allow_rotation=true,
   )
 

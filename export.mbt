@@ -24,7 +24,7 @@ pub fn to_svg(
     0.0
   }
 
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   buf.write_string("<svg xmlns=\"http://www.w3.org/2000/svg\" ")
   buf.write_string("viewBox=\"0 0 ")
   buf.write_string(bin_width.to_string())
@@ -112,7 +112,7 @@ pub fn to_svg(
 ///|
 /// Exports packed rectangles into a standard JSON texture atlas manifest format.
 pub fn to_json(bin_width : Int, bin_height : Int, rects : Array[Rect]) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   buf.write_string("{\n")
   buf.write_string("  \"meta\": {\n")
   buf.write_string("    \"width\": ")

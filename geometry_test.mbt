@@ -1,5 +1,5 @@
 test "rect_area_and_boundaries" {
-  let r = Rect::new(10, 20, 30, 40)
+  let r = @moon_binpack.Rect::new(10, 20, 30, 40)
   assert_eq(r.x, 10)
   assert_eq(r.y, 20)
   assert_eq(r.width, 30)
@@ -11,10 +11,10 @@ test "rect_area_and_boundaries" {
 }
 
 test "rect_containment" {
-  let outer = Rect::new(0, 0, 100, 100)
-  let inner = Rect::new(10, 10, 50, 50)
-  let overlap = Rect::new(50, 50, 100, 100)
-  let outside = Rect::new(200, 200, 10, 10)
+  let outer = @moon_binpack.Rect::new(0, 0, 100, 100)
+  let inner = @moon_binpack.Rect::new(10, 10, 50, 50)
+  let overlap = @moon_binpack.Rect::new(50, 50, 100, 100)
+  let outside = @moon_binpack.Rect::new(200, 200, 10, 10)
 
   assert_true(outer.contains(inner))
   assert_false(inner.contains(outer))
@@ -23,9 +23,9 @@ test "rect_containment" {
 }
 
 test "rect_intersection" {
-  let r1 = Rect::new(0, 0, 20, 20)
-  let r2 = Rect::new(10, 10, 20, 20)
-  let r3 = Rect::new(30, 30, 10, 10)
+  let r1 = @moon_binpack.Rect::new(0, 0, 20, 20)
+  let r2 = @moon_binpack.Rect::new(10, 10, 20, 20)
+  let r3 = @moon_binpack.Rect::new(30, 30, 10, 10)
 
   assert_true(r1.intersects(r2))
   assert_true(r2.intersects(r1))
@@ -47,9 +47,9 @@ test "rect_intersection" {
 }
 
 test "size_and_bin" {
-  let s = Size::new(64, 128)
+  let s = @moon_binpack.Size::new(64, 128)
   assert_eq(s.area(), 8192)
 
-  let b = Bin::new(1024, 768)
+  let b = @moon_binpack.Bin::new(1024, 768)
   assert_eq(b.area(), 786432)
 }

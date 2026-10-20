@@ -1,45 +1,45 @@
 test "benchmark_50_items_non_overlapping_invariant" {
   let bin_w = 512
   let bin_h = 512
-  let packer = MaxRectsPacker::new(bin_w, bin_h)
+  let packer = @moon_binpack.MaxRectsPacker::new(bin_w, bin_h)
 
   // 30 mixed-size items commonly found in UI and game sprite sheets
   let items = [
-    Size::new(128, 64),
-    Size::new(64, 128),
-    Size::new(96, 96),
-    Size::new(100, 50),
-    Size::new(50, 100),
-    Size::new(64, 64),
-    Size::new(64, 64),
-    Size::new(32, 32),
-    Size::new(32, 32),
-    Size::new(32, 64),
-    Size::new(64, 32),
-    Size::new(48, 48),
-    Size::new(48, 48),
-    Size::new(80, 40),
-    Size::new(40, 80),
-    Size::new(32, 32),
-    Size::new(32, 32),
-    Size::new(24, 24),
-    Size::new(24, 24),
-    Size::new(16, 16),
-    Size::new(16, 16),
-    Size::new(16, 32),
-    Size::new(32, 16),
-    Size::new(72, 36),
-    Size::new(36, 72),
-    Size::new(56, 56),
-    Size::new(28, 28),
-    Size::new(28, 28),
-    Size::new(20, 20),
-    Size::new(20, 20),
+    @moon_binpack.Size::new(128, 64),
+    @moon_binpack.Size::new(64, 128),
+    @moon_binpack.Size::new(96, 96),
+    @moon_binpack.Size::new(100, 50),
+    @moon_binpack.Size::new(50, 100),
+    @moon_binpack.Size::new(64, 64),
+    @moon_binpack.Size::new(64, 64),
+    @moon_binpack.Size::new(32, 32),
+    @moon_binpack.Size::new(32, 32),
+    @moon_binpack.Size::new(32, 64),
+    @moon_binpack.Size::new(64, 32),
+    @moon_binpack.Size::new(48, 48),
+    @moon_binpack.Size::new(48, 48),
+    @moon_binpack.Size::new(80, 40),
+    @moon_binpack.Size::new(40, 80),
+    @moon_binpack.Size::new(32, 32),
+    @moon_binpack.Size::new(32, 32),
+    @moon_binpack.Size::new(24, 24),
+    @moon_binpack.Size::new(24, 24),
+    @moon_binpack.Size::new(16, 16),
+    @moon_binpack.Size::new(16, 16),
+    @moon_binpack.Size::new(16, 32),
+    @moon_binpack.Size::new(32, 16),
+    @moon_binpack.Size::new(72, 36),
+    @moon_binpack.Size::new(36, 72),
+    @moon_binpack.Size::new(56, 56),
+    @moon_binpack.Size::new(28, 28),
+    @moon_binpack.Size::new(28, 28),
+    @moon_binpack.Size::new(20, 20),
+    @moon_binpack.Size::new(20, 20),
   ]
 
   let (packed, unpacked) = packer.insert_batch(
     items,
-    method=MaxRectsHeuristic::BestShortSideFit,
+    heuristic=@moon_binpack.MaxRectsHeuristic::BestShortSideFit,
     allow_rotation=true,
   )
 
@@ -70,9 +70,9 @@ test "algorithm_comparison_benchmark" {
   let bin_w = 300
   let bin_h = 300
 
-  let maxrects = MaxRectsPacker::new(bin_w, bin_h)
-  let guillotine = GuillotinePacker::new(bin_w, bin_h)
-  let shelf = ShelfPacker::new(bin_w, bin_h)
+  let maxrects = @moon_binpack.MaxRectsPacker::new(bin_w, bin_h)
+  let guillotine = @moon_binpack.GuillotinePacker::new(bin_w, bin_h)
+  let shelf = @moon_binpack.ShelfPacker::new(bin_w, bin_h)
 
   let sizes = [
     (60, 40),

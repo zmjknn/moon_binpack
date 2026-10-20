@@ -1,7 +1,7 @@
 test "shelf_packer_basic" {
-  let packer = ShelfPacker::new(100, 100)
+  let packer = @moon_binpack.ShelfPacker::new(100, 100)
 
-  let r1 = packer.insert(50, 30, id=1, method=ShelfHeuristic::NextFit)
+  let r1 = packer.insert(50, 30, id=1, heuristic=@moon_binpack.ShelfHeuristic::NextFit)
   match r1 {
     Some(r) => {
       assert_eq(r.x, 0)
@@ -14,7 +14,7 @@ test "shelf_packer_basic" {
   }
 
   // Second fits on the same shelf
-  let r2 = packer.insert(40, 20, id=2, method=ShelfHeuristic::NextFit)
+  let r2 = packer.insert(40, 20, id=2, heuristic=@moon_binpack.ShelfHeuristic::NextFit)
   match r2 {
     Some(r) => {
       assert_eq(r.x, 50)
@@ -26,7 +26,7 @@ test "shelf_packer_basic" {
   }
 
   // Third does not fit horizontally (50 + 40 + 20 = 110 > 100), starts new shelf at y = 30
-  let r3 = packer.insert(20, 40, id=3, method=ShelfHeuristic::NextFit)
+  let r3 = packer.insert(20, 40, id=3, heuristic=@moon_binpack.ShelfHeuristic::NextFit)
   match r3 {
     Some(r) => {
       assert_eq(r.x, 0)
@@ -51,7 +51,7 @@ test "shelf_packer_basic" {
 }
 
 test "shelf_packer_overflow" {
-  let packer = ShelfPacker::new(50, 50)
+  let packer = @moon_binpack.ShelfPacker::new(50, 50)
   let r1 = packer.insert(40, 40, id=1)
   assert_true(r1 != None)
 
@@ -61,19 +61,19 @@ test "shelf_packer_overflow" {
 }
 
 test "shelf_packer_heuristics" {
-  let p_first = ShelfPacker::new(100, 100)
-  let p_best = ShelfPacker::new(100, 100)
-  let p_worst = ShelfPacker::new(100, 100)
-  let p_height = ShelfPacker::new(100, 100)
+  let p_first = @moon_binpack.ShelfPacker::new(100, 100)
+  let p_best = @moon_binpack.ShelfPacker::new(100, 100)
+  let p_worst = @moon_binpack.ShelfPacker::new(100, 100)
+  let p_height = @moon_binpack.ShelfPacker::new(100, 100)
 
   let sizes = [(30, 20), (20, 20), (40, 20), (50, 30), (30, 10)]
 
   for s in sizes {
     let (w, h) = s
-    let _ = p_first.insert(w, h, method=ShelfHeuristic::FirstFit)
-    let _ = p_best.insert(w, h, method=ShelfHeuristic::BestAreaFit)
-    let _ = p_worst.insert(w, h, method=ShelfHeuristic::WorstAreaFit)
-    let _ = p_height.insert(w, h, method=ShelfHeuristic::BestHeightFit)
+    let _ = p_first.insert(w, h, heuristic=@moon_binpack.ShelfHeuristic::FirstFit)
+    let _ = p_best.insert(w, h, heuristic=@moon_binpack.ShelfHeuristic::BestAreaFit)
+    let _ = p_worst.insert(w, h, heuristic=@moon_binpack.ShelfHeuristic::WorstAreaFit)
+    let _ = p_height.insert(w, h, heuristic=@moon_binpack.ShelfHeuristic::BestHeightFit)
   }
 
   assert_true(p_first.occupancy() > 0.0)

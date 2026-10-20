@@ -19,17 +19,17 @@ pub fn GuillotinePacker::new(bin_width : Int, bin_height : Int) -> GuillotinePac
 }
 
 ///|
-pub fn bin_width(self : GuillotinePacker) -> Int {
+pub fn GuillotinePacker::bin_width(self : GuillotinePacker) -> Int {
   self.bin_width
 }
 
 ///|
-pub fn bin_height(self : GuillotinePacker) -> Int {
+pub fn GuillotinePacker::bin_height(self : GuillotinePacker) -> Int {
   self.bin_height
 }
 
 ///|
-pub fn occupancy(self : GuillotinePacker) -> Double {
+pub fn GuillotinePacker::occupancy(self : GuillotinePacker) -> Double {
   let total = self.bin_width * self.bin_height
   if total > 0 {
     self.used_surface_area.to_double() / total.to_double()
@@ -40,7 +40,7 @@ pub fn occupancy(self : GuillotinePacker) -> Double {
 
 ///|
 /// Attempts to insert a rectangle of dimensions (width, height).
-pub fn insert(
+pub fn GuillotinePacker::insert(
   self : GuillotinePacker,
   width : Int,
   height : Int,
@@ -86,11 +86,11 @@ pub fn insert(
 }
 
 ///|
-fn find_best_free_rect(
+fn GuillotinePacker::find_best_free_rect(
   self : GuillotinePacker,
   width : Int,
   height : Int,
-  method : GuillotineHeuristic
+  heuristic : GuillotineHeuristic
 ) -> (Int, Bool) {
   let mut best_index = -1
   let mut best_rotated = false
@@ -98,7 +98,7 @@ fn find_best_free_rect(
   let mut best_score2 = 2147483647
 
   // Worst-fit heuristics maximize score instead
-  let is_worst = match method {
+  let is_worst = match heuristic {
     WorstAreaFit | WorstShortSideFit | WorstLongSideFit => true
     _ => false
   }
@@ -113,7 +113,7 @@ fn find_best_free_rect(
 
     // Normal orientation
     if width <= f.width && height <= f.height {
-      let (score1, score2) = self.score_by_heuristic(f, width, height, method)
+      let (score1, score2) = self.score_by_heuristic(f, width, height, heuristic)
       if is_worst {
         if score1 > best_score1 || (score1 == best_score1 && score2 > best_score2) {
           best_score1 = score1
@@ -131,7 +131,7 @@ fn find_best_free_rect(
 
     // Rotated orientation
     if height <= f.width && width <= f.height {
-      let (score1, score2) = self.score_by_heuristic(f, height, width, method)
+      let (score1, score2) = self.score_by_heuristic(f, height, width, heuristic)
       if is_worst {
         if score1 > best_score1 || (score1 == best_score1 && score2 > best_score2) {
           best_score1 = score1
@@ -152,12 +152,12 @@ fn find_best_free_rect(
 }
 
 ///|
-fn score_by_heuristic(
+fn GuillotinePacker::score_by_heuristic(
   self : GuillotinePacker,
   f : Rect,
   w : Int,
   h : Int,
-  method : GuillotineHeuristic
+  heuristic : GuillotineHeuristic
 ) -> (Int, Int) {
   let _ = self
   let rem_w = f.width - w
@@ -165,7 +165,7 @@ fn score_by_heuristic(
   let short_side = if rem_w < rem_h { rem_w } else { rem_h }
   let long_side = if rem_w > rem_h { rem_w } else { rem_h }
 
-  match method {
+  match heuristic {
     BestAreaFit | WorstAreaFit => (f.area() - w * h, short_side)
     BestShortSideFit | WorstShortSideFit => (short_side, long_side)
     BestLongSideFit | WorstLongSideFit => (long_side, short_side)
@@ -173,18 +173,18 @@ fn score_by_heuristic(
 }
 
 ///|
-fn split_free_rect(
+fn GuillotinePacker::split_free_rect(
   self : GuillotinePacker,
   free : Rect,
   placed : Rect,
-  method : SplitHeuristic
+  heuristic : SplitHeuristic
 ) -> Unit {
   let w = placed.width
   let h = placed.height
   let rem_w = free.width - w
   let rem_h = free.height - h
 
-  let split_horizontal = match method {
+  let split_horizontal = match heuristic {
     ShorterLeftoverAxis => rem_w <= rem_h
     LongerLeftoverAxis => rem_w > rem_h
     MinimizeArea => rem_w * h <= w * rem_h
@@ -218,7 +218,7 @@ fn split_free_rect(
 
 ///|
 /// Merges adjacent free rectangles that form a single larger rectangle.
-pub fn merge_free_rectangles(self : GuillotinePacker) -> Unit {
+pub fn GuillotinePacker::merge_free_rectangles(self : GuillotinePacker) -> Unit {
   let mut i = 0
   while i < self.free_rectangles.length() {
     let mut j = i + 1
@@ -250,7 +250,7 @@ pub fn merge_free_rectangles(self : GuillotinePacker) -> Unit {
       j = j + 1
     }
 
-    if not(merged) {
+    if !merged {
       i = i + 1
     }
   }

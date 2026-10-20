@@ -76,7 +76,7 @@ let items = [
 
 let (packed, unpacked) = packer.insert_batch(
   items,
-  method=@moon_binpack.MaxRectsHeuristic::BestShortSideFit,
+  heuristic=@moon_binpack.MaxRectsHeuristic::BestShortSideFit,
   allow_rotation=true,
 )
 

@@ -46,13 +46,13 @@ pub fn AtlasPacker::new(options~ : AtlasOptions = AtlasOptions::default()) -> At
 
 ///|
 /// Packs an array of item sizes into one or more bins according to configured options.
-pub fn pack(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
+pub fn AtlasPacker::pack(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
   if items.length() == 0 {
     return {
       pages: [],
       rects: [],
       unpacked: [],
-      stats: PackingStats::default(),
+      stats: Default::default(),
     }
   }
 
@@ -64,7 +64,7 @@ pub fn pack(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
 }
 
 ///|
-fn pack_auto_grow(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
+fn AtlasPacker::pack_auto_grow(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
   // Candidate power of two dimensions
   let pot_sizes = [64, 128, 256, 512, 1024, 2048, 4096]
 
@@ -83,7 +83,7 @@ fn pack_auto_grow(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
 }
 
 ///|
-fn pack_fixed_bins(
+fn AtlasPacker::pack_fixed_bins(
   self : AtlasPacker,
   items : Array[Size],
   bin_w : Int,
@@ -98,7 +98,7 @@ fn pack_fixed_bins(
       pages: [],
       rects: [],
       unpacked: items,
-      stats: PackingStats::default(),
+      stats: Default::default(),
     }
   }
 
@@ -140,7 +140,7 @@ fn pack_fixed_bins(
         req_w,
         req_h,
         id=orig_id,
-        method=self.options.heuristic,
+        heuristic=self.options.heuristic,
         allow_rotation=self.options.allow_rotation,
       )
 
@@ -164,7 +164,7 @@ fn pack_fixed_bins(
       }
     }
 
-    if not(packed_any_this_page) || single_page_only {
+    if !packed_any_this_page || single_page_only {
       // Cannot make forward progress on this item set
       let unpacked = []
       for it in next_remaining {
