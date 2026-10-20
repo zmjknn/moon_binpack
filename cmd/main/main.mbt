@@ -54,6 +54,22 @@ fn main {
 
   println("")
   let svg = @lib.to_svg(bin_w, bin_h, packed, title="moon_binpack Demo Atlas")
-  println("Generated SVG Preview (" + svg.length().to_string() + " bytes).")
+  let css = @lib.to_css(packed, class_prefix="sprite")
+  let html = @lib.to_html(bin_w, bin_h, packed, title="moon_binpack Interactive Report")
+  println("Generated Exporters:")
+  println("  - SVG Preview:    " + svg.length().to_string() + " bytes")
+  println("  - CSS Sprites:    " + css.length().to_string() + " bytes")
+  println("  - HTML Report:    " + html.length().to_string() + " bytes")
+
+  println("")
+  println("Running Heuristic Arena (best_pack)...")
+  let (best_res, winning_algo) = @lib.best_pack(items, max_width=512, max_height=512)
+  let best_pct = (best_res.stats.occupancy * 1000.0).to_int().to_double() / 10.0
+  println("  - Winning Heuristic: " + winning_algo)
+  println("  - Pages:             " + best_res.pages.length().to_string())
+  println("  - Occupancy:         " + best_pct.to_string() + "%")
+
+  println("")
   println("Done successfully!")
 }
+

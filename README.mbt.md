@@ -34,13 +34,16 @@ It solves the classic NP-hard 2D Bin Packing Problem (2D-BPP), providing industr
   - Supports `BottomLeft` and `MinWasteFit` heuristics.
   - Dynamic skyline segment splitting and adjacent same-height segment merging.
   - High space efficiency with significantly faster packing throughput.
-- **AtlasPacker (Multi-Bin & POT Adaptive)**:
+- **AtlasPacker & Multi-Algorithm Arena (`best_pack`)**:
   - Automatic multi-page allocation for overflowing item sets.
   - Adaptive Power-of-Two (POT: 64, 128, 256, 512, 1024, 2048, 4096) sizing.
   - Inner padding and border margin controls to prevent texture bleeding during bilinear GPU filtering.
-- **Visualizer & Exporter**:
+  - `best_pack`: Automatically benchmarks and compares 7 heuristics across MaxRects and Skyline to pick the layout with the highest occupancy and fewest pages.
+- **Visualizer & Web Ecosystem Exporters**:
   - Standalone responsive SVG visualizer with item dimensions, occupancy badges, and color palettes.
   - Standard JSON layout manifest compatible with WebGL, Pixi.js, Phaser, and custom rendering pipelines.
+  - **CSS Sprite Exporter (`to_css`)**: Generates production-ready CSS sprite rules with negative coordinate offsets.
+  - **Interactive HTML Report (`to_html`)**: Self-contained dark-theme HTML report with embedded SVG visualization, metrics cards, and frame tables.
 - **Invariants & Reliability**:
   - Non-overlapping guarantee: $\forall i \neq j, R_i \cap R_j = \emptyset$
   - Boundary containment and area conservation verified by comprehensive automated property tests.
@@ -120,14 +123,31 @@ println("Allocated pages: " + result.pages.length().to_string())
 println("Packed rectangles: " + result.rects.length().to_string())
 ```
 
-### 4. SVG & JSON Export
+### 4. Multi-Algorithm Arena (`best_pack`)
+
+Automatically evaluates MaxRects and Skyline heuristics to choose the most compact packing layout:
 
 ```moonbit
-// Export to responsive standalone SVG
+let (best_result, winning_algo) = @moon_binpack.best_pack(items, max_width=1024, max_height=1024)
+
+println("Winning Algorithm: " + winning_algo)
+println("Occupancy: " + (best_result.stats.occupancy * 100.0).to_string() + "%")
+```
+
+### 5. Web Ecosystem Exporters (SVG, JSON, CSS, HTML)
+
+```moonbit
+// Responsive standalone SVG
 let svg = @moon_binpack.to_svg(512, 512, packed, title="Texture Atlas Preview")
 
-// Export to JSON frame manifest
+// Standard JSON texture atlas manifest
 let json = @moon_binpack.to_json(512, 512, packed)
+
+// Production-ready CSS sprite rules
+let css = @moon_binpack.to_css(packed, class_prefix="sprite", image_url="atlas.png")
+
+// Standalone interactive HTML inspection report
+let html = @moon_binpack.to_html(512, 512, packed, title="Atlas Inspection Report")
 ```
 
 ---
@@ -165,9 +185,19 @@ Layout Frames:
   #3   0   144   48   80   No
   ...
 
-Generated SVG Preview (3717 bytes).
+Generated Exporters:
+  - SVG Preview:    3717 bytes
+  - CSS Sprites:    1482 bytes
+  - HTML Report:    10950 bytes
+
+Running Heuristic Arena (best_pack)...
+  - Winning Heuristic: MaxRects-BSSF
+  - Pages:             1
+  - Occupancy:         52.1%
+
 Done successfully!
 ```
+
 
 ---
 
