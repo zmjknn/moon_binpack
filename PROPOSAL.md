@@ -3,75 +3,44 @@
 ## 基本信息
 - **项目名称**：`moon_binpack`：工业级二维矩形装箱与纹理图集布局引擎
 - **参赛者**：zmjknn
+- **联系方式**：[请在此填写您的手机号/微信/邮箱]
 - **GitHub 仓库链接**：https://github.com/zmjknn/moon_binpack
-- **项目方向**：MoonBit 算法基础库 / 图形与排版基础设施
+- **项目方向**：MoonBit 算法基础库 / 2D 图形与排版基础设施
 - **是否为移植项目**：是
-- **参考开源项目**：
-  - 原项目名称：RectangleBinPack (C++ / Jukka Jylänki) 与 rect_packer (Rust)
-  - 原项目链接：https://github.com/juj/RectangleBinPack 与 https://github.com/Pao/rect_packer
-  - 原项目许可证：Public Domain / MIT
-  - 本项目许可证：Apache-2.0
 
----
+## 项目简介
+moon_binpack 计划将经典工业级二维矩形装箱（2D Bin Packing Problem, 2D-BPP）的核心几何优化能力移植到 MoonBit 生态，为 2D 游戏引擎、UI 渲染系统、CSS Sprite 合成、字体字形图集（Glyph Atlas）烘焙、前端 Canvas 绘制以及工业排料切割提供高性能、可复用的自动空间规划与纹理图集布局引擎。项目面向需要在 MoonBit 及 WebAssembly 环境中进行图形排版、资源打包和几何优化的库作者与应用开发者，提供 Rect/Size 几何原语、MaxRects、Guillotine、Shelf 三大主流启发式装箱算法调度、自适应 2 的幂次方纹理图集分配器，以及 SVG 矢量可视化与标准 JSON 布局格式导出。
 
-## 1. 项目价值与生态定位
+二维矩形装箱属于 NP-Hard 难题，工业界高度依赖成熟的几何启发式算法在毫秒级时间内获得超过 90% 的极高空间利用率。随着 MoonBit 在 WebAssembly、图形渲染和全栈领域的快速演进，社区亟需一个纯原生、零外部 C 依赖的二维装箱底层库。传统的跨语言方案往往需要在 JS 宿主中调用重量级 C/C++ WebAssembly 模块，面临昂贵的数据跨边界序列化成本和难以适配无宿主独立环境的问题。将该算法引擎原生移植到 MoonBit，不仅能精准补齐 MoonBit 在“几何优化与图形布局底层算法”上的战略生态缺口（经检索 mooncakes.io 与 GitHub 为 0 竞品空白），还利用 MoonBit 的强类型枚举与模式匹配消除原 C++ 的内存安全风险，带来极致的跨平台一致性与执行性能。
 
-### 具体痛点与背景
-在 2D 游戏开发、Web/UI 渲染引擎、CSS Sprite 图集生成、字体字形图集（Glyph Atlas）烘焙、前端 Canvas 绘制以及工业排料切割中，**二维矩形装箱（2D Bin Packing Problem, 2D-BPP）**是高频出现的核心几何优化问题。该问题属于 NP-Hard 难题，工业界普遍依赖高效的启发式几何算法（如 MaxRects、Guillotine、Shelf）在毫秒级时间内计算出空间利用率超过 90% 的紧凑排布方案。
+## 核心功能范围
+- 提供基础几何模型与空间拓扑核心，支持 Rect、Size、Bin 几何原语，内置包含性判定、旋转变换、边距与内间隙（Padding/Border）控制；
+- 提供 MaxRects（最大矩形法，工业界黄金标准）算法实现，支持 BestShortSideFit、BestLongSideFit、BestAreaFit、BottomLeft、ContactPoint 5 种启发式规则，内置相交自由矩形分裂与包含关系去重剪枝；
+- 提供 Guillotine（断头台切分法）算法实现，支持 6 种空闲矩形选择规则与 6 种切分规则（ShorterAxis、LongerAxis、MinimizeArea 等），并内置相邻空闲矩形合并（Merge Rectangles）防碎片化算法；
+- 提供 Shelf（货架分层法）算法实现，支持 NextFit、FirstFit、BestAreaFit、BestHeightFit 等策略，为等高字体图元与图标提供 O(N log N) 极速装箱；
+- 提供高级 AtlasPacker 图集分配器，支持多纹理页（Multi-Bin）自动溢出分配与 2 的幂次方（Power-of-Two: 64/128/256/512/1024/2048/4096）自适应尺寸增长；
+- 支持 90 度矩形旋转允许/禁止切换，以及按面积/长边降序的自动批量装箱（Batch Insertion）；
+- 支持标准 JSON 布局格式导出，输出清晰的帧坐标清单与利用率指标，无缝对接 WebGL / Pixi.js / Phaser 等图形管线；
+- 支持生成响应式 SVG 矢量可视化排版图，带颜色区分、尺寸标注与统计徽章，便于开发调试与直观验证；
+- 提供独立开箱即用的命令行工具（CLI Demo），支持通过命令行直接体验装箱排版并输出预览文件；
+- 提供完整的自动化测试套件与差分测试，严格保证无重叠（Non-overlapping）、边界包含与旋转一致性等几何不变式。
 
-随着 MoonBit 语言快速进军 WebAssembly、边缘计算与全栈生态（例如社区正在构建的 Canvas、SVG、游戏引擎与 UI 框架），开发者亟需一个纯原生、零外部 C 依赖的二维装箱引擎。传统跨语言开发方案依赖在 JS 宿主中调用重量级 C/C++ WebAssembly 模块，面临昂贵的数据跨边界复制成本和难以适配无宿主独立环境的问题。
+## 预期验收产物
+- `zmjknn/moon_binpack` 核心库：发布至 mooncakes.io，开发者可通过 `moon add zmjknn/moon_binpack` 一键引入并在 MoonBit 原生项目中使用其完整 API；
+- 独立 CLI 工具：支持通过 `moon run cmd/main` 直接编译运行，一键执行矩形装箱排版并生成实时 SVG 预览与 JSON 布局清单；
+- 完备的自动化测试与几何不变式验证：包含 17 组以上的自动化单元测试与基准用例，严格保证对任意有效输入满足不重叠（∀ i ≠ j, Ri ∩ Rj = ∅）、边界包含与面积守恒；
+- 自动化 CI 流水线：集成 GitHub Actions，持续验证 `moon check`、`moon test`、`moon build` 与 CLI 运行，保持全绿灯通过；
+- 详尽的文档与示例：包含中英文 README、API 使用手册、算法原理说明、SVG 效果展示以及与业界标准（Jukka Jylänki 经典实现）对照的性能指标。
 
-### 生态位重要性与竞品分析
-经全量检索，目前 `mooncakes.io` 官方包仓库与 GitHub 开源社区中，针对 2D 矩形装箱、MaxRects、Guillotine 切分以及纹理图集打包的相关模块**完全空白（0 个现有实现）**。`moon_binpack` 将精准补齐 MoonBit 在“几何优化与图形布局底层算法”上的战略生态缺口，为未来的 MoonBit 游戏框架、富文本字形缓存与图形工具提供标准的公共基础设施。
+## 移植或参考说明
+- **原项目名称**：RectangleBinPack (C++) 与 rect_packer (Rust)
+- **原项目链接**：https://github.com/juj/RectangleBinPack 与 https://github.com/Pao/rect_packer
+- **原项目许可证**：Public Domain / MIT
+- **本项目许可证**：Apache-2.0
 
----
-
-## 2. 交付范围与工程边界
-
-### 核心功能与交付内容
-1. **基础几何与空间拓扑核心**：
-   - 提供 `Rect`、`Size`、`Bin` 几何原语，支持交集检测、包含性判定、旋转变换与外边框间隙（Padding/Border）支持；
-2. **三套工业级主流装箱算法实现**：
-   - **MaxRects（最大矩形法，工业界黄金标准）**：基于重叠自由矩形集合的高效空间查找，支持 Best Short Side Fit (BSSF)、Best Long Side Fit (BLSF)、Best Area Fit (BAF)、Bottom-Left (BL) 与 Contact Point (CP) 等 5 种启发式匹配规则，内置相交分裂与重叠去重剪枝；
-   - **Guillotine（断头台切分法）**：支持 Short Axis Split、Long Axis Split、Shorter Leftover Axis 等切分规则，并附带相邻空闲矩形合并（Merge Rectangles）防空间碎片化算法；
-   - **Shelf（货架分层法）**：实现 Shelf Next-Fit、First-Fit、Best-Fit，专为近似高度图元（如等高字体、图标）提供 $O(N \log N)$ 极速装箱；
-3. **高级图集与多页分配器（Atlas Allocator）**：
-   - 支持多纹理页（Multi-Bin）自动溢出分配；
-   - 支持 2 的幂次方（Power-of-Two, 256/512/1024/2048）纹理尺寸自适应增长收敛；
-   - 支持 90 度旋转允许/禁止切换；
-4. **可视化与工业级导出**：
-   - 提供 SVG 矢量可视化排版图导出（生成带尺寸标签、利用率 Badge、美观配色的排布预览）；
-   - 提供通用 JSON 格式导出，无缝适配 WebGL / Pixi / Phaser 等主流图形管线；
-5. **完整工程化验证**：
-   - 提供独立 CLI 工具，可通过命令行直接执行矩形装箱与预览生成；
-   - 提供 100% 覆盖核心路径的单元测试、无重叠验证器与经典基准用例测试集。
-
-### 明确不做的工程边界
-- **不涉及 GPU 纹理显存交互与底层像素图光栅化**：项目专注几何拓扑、空间切分与坐标规划计算，以保持 100% 纯 MoonBit 与全平台（Native, Wasm, JS）一致性；
-- **不涉及三维（3D）装箱与不规则多边形（Nesting）排料**：聚焦二维正交矩形工业标准，确保极佳的算法收敛性能与代码稳定性。
-
----
-
-## 3. 预期使用场景
-
-1. **游戏与 UI 引擎的纹理图集（Texture Atlas / Sprite Sheet）打包**：
-   游戏开发者将数十到数百张尺寸各异的技能图标、角色序列帧打包进一张 $1024 \times 1024$ 的纹理贴图中，显著降低 GPU Draw Call，避免纹理出血；
-2. **矢量字体渲染中的动态字形字库缓存（Dynamic Glyph Atlas Cache）**：
-   排版或渲染引擎在运行时按需加载汉字与拉丁字符的点阵/SDF，动态调用装箱算法紧密放入字形纹理缓存中；
-3. **前端/全栈图标生成与 CSS Sprite 合成工具链**：
-   在静态站点生成器（SSG）或构建工具中，将零散 SVG/PNG 图标自动合并并输出 CSS 坐标偏移映射表和排版预览。
-
----
-
-## 4. 实现路径与技术理解
-
-### 技术路径与独到设计
-1. **基于不可变数据与高效可变切分的双层设计**：
-   充分发挥 MoonBit 现代类型系统特性，使用模式匹配与代数数据类型表达切分策略（Heuristics），在内存分配敏感的内层循环中采用原地矩形分裂与剪枝数组，最大化 Wasm 运行性能；
-2. **严格的几何正确性与无重叠不变式**：
-   每个算法均内置强断言与差分检查，保证对任意输入满足：
-   - **不重叠性（Non-overlapping）**：$\forall i \neq j, \text{rect}_i \cap \text{rect}_j = \emptyset$；
-   - **边界包含性（Containment）**：所有矩形均严格位于 Bin 边界内；
-   - **面积守恒度量（Occupancy）**：精确计算有效填充率 $\frac{\sum \text{area}}{\text{bin\_area}}$，优化空间浪费；
-3. **对原 C++ 实现的现代化重构**：
-   剔除 C++ 裸指针与宏依赖，利用 MoonBit 的泛型与强类型枚举，以纯函数式接口分发算法，向用户提供 `new_packer(algorithm).pack(...)` 的统一简洁入口。
+### 与原项目相比，本项目会做以下简化和重新设计：
+- **纯函数式与代数数据类型建模**：充分利用 MoonBit 的代数数据类型（enum）与模式匹配重新定义启发式策略（MaxRectsHeuristic、GuillotineHeuristic、SplitHeuristic、ShelfHeuristic），消除原 C++ 的散落常量与宏定义；
+- **现代包结构与接口统一**：废弃原 C++ 项目陈旧的 Makefile 与繁杂类层次，使用 MoonBit 标准的包结构（moon.mod / moon.pkg），提供统一高阶的 `AtlasPacker` 封装；
+- **内存安全与高效数据结构**：摒弃 C++ 的裸指针操作与手动内存管理，基于 MoonBit 的原生定长/动态数组实现高效原地分裂与剪枝，既避免内存泄漏与越界漏洞，又确保在 WebAssembly 目标下的极高运行效率；
+- **原生多页与 POT 扩展**：原 C++ 库仅支持固定单 Bin 装箱，本项目新增了现代图形渲染必须的“多页（Multi-Bin）自动溢出”与“2的幂次方自适应增长”算法；
+- **内建可视化与格式导出生态**：原项目仅输出纯坐标数组，本项目原生实现了开箱即用的 SVG 矢量图生成与通用 JSON Manifest 导出，极大降低开发者在前端与游戏引擎中的集成成本。
