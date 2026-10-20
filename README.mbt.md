@@ -1,47 +1,48 @@
-# moon_binpack 🥮📦
+# moon_binpack
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20261016-purple.svg)](https://www.moonbitlang.com)
 [![CI](https://github.com/zmjknn/moon_binpack/actions/workflows/ci.yml/badge.svg)](https://github.com/zmjknn/moon_binpack/actions/workflows/ci.yml)
+[![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20261016-purple.svg)](https://www.moonbitlang.com)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-**`moon_binpack`** is an industrial-grade, zero-dependency 2D rectangle bin packing and texture atlas layout engine implemented in 100% pure [MoonBit](https://www.moonbitlang.com).
+`moon_binpack` is an industrial-grade, zero-dependency 2D rectangle bin packing and texture atlas layout engine implemented in 100% pure [MoonBit](https://www.moonbitlang.com).
 
 It solves the classic NP-hard 2D Bin Packing Problem (2D-BPP), providing industry-standard heuristics for game developers, UI rendering engines, CSS sprite sheet generators, and font glyph atlas bakers across WebAssembly, Native, and JavaScript targets.
 
 ---
 
-## 🌟 Features
+## Features
 
-- **🏆 MaxRects Packing (Gold Standard)**:
+- **MaxRects Packing**:
   - Tracks all maximal overlapping free rectangles for optimal space utilization.
   - 5 heuristic placement rules:
-    - `BestShortSideFit` (BSSF)
-    - `BestLongSideFit` (BLSF)
-    - `BestAreaFit` (BAF)
-    - `BottomLeftRule` (BL)
-    - `ContactPointRule` (CP)
-  - Full support for 90° rectangle rotation and area-descending batch insertion.
-- **✂️ Guillotine Cut Packing**:
-  - Partitions empty spaces using guillotine cuts.
+    - Best Short Side Fit (`BestShortSideFit`)
+    - Best Long Side Fit (`BestLongSideFit`)
+    - Best Area Fit (`BestAreaFit`)
+    - Bottom-Left Rule (`BottomLeftRule`)
+    - Contact Point Rule (`ContactPointRule`)
+  - Supports 90° rectangle rotation and area-descending batch insertion.
+- **Guillotine Cut Packing**:
+  - Partitions empty spaces using recursive guillotine cuts.
   - 6 free rect selection heuristics (`BestAreaFit`, `BestShortSideFit`, `BestLongSideFit`, `WorstAreaFit`, etc.).
   - 6 split strategies (`ShorterLeftoverAxis`, `LongerLeftoverAxis`, `MinimizeArea`, `MaximizeArea`, `ShorterAxis`, `LongerAxis`).
-  - **Adjacent free rectangle merging** optimization to eliminate fragmentation.
-- **📚 Shelf Packing**:
+  - Adjacent free rectangle merging to eliminate space fragmentation.
+- **Shelf Packing**:
   - Ultra-fast $O(N \log N)$ algorithm for items of similar heights (e.g. font glyphs, uniform icons).
-  - Supports `NextFit`, `FirstFit`, `BestAreaFit`, `BestHeightFit`, and `WorstAreaFit`.
-- **🌐 AtlasPacker (Multi-Bin & Power-of-Two Adaptive)**:
+  - Heuristics: `NextFit`, `FirstFit`, `BestAreaFit`, `BestHeightFit`, `WorstAreaFit`.
+- **AtlasPacker (Multi-Bin & POT Adaptive)**:
   - Automatic multi-page allocation for overflowing item sets.
   - Adaptive Power-of-Two (POT: 64, 128, 256, 512, 1024, 2048, 4096) sizing.
   - Inner padding and border margin controls to prevent texture bleeding during bilinear GPU filtering.
-- **🎨 Visualizer & Exporter**:
-  - One-click **responsive SVG generator** with item labels, distinct color palettes, and occupancy badges.
-  - Standard **JSON layout manifest** compatible with WebGL, Pixi.js, Phaser, and custom game engines.
-- **🛡️ Rock-solid Invariants**:
-  - 100% test coverage for non-overlapping guarantees ($\forall i \neq j, R_i \cap R_j = \emptyset$), boundary containment, and area conservation.
+- **Visualizer & Exporter**:
+  - Standalone responsive SVG visualizer with item dimensions, occupancy badges, and color palettes.
+  - Standard JSON layout manifest compatible with WebGL, Pixi.js, Phaser, and custom rendering pipelines.
+- **Invariants & Reliability**:
+  - Non-overlapping guarantee: $\forall i \neq j, R_i \cap R_j = \emptyset$
+  - Boundary containment and area conservation verified by comprehensive automated property tests.
 
 ---
 
-## 📦 Installation
+## Installation
 
 Add `moon_binpack` to your MoonBit project:
 
@@ -59,7 +60,7 @@ import {
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. MaxRects Packing
 
@@ -105,8 +106,8 @@ println("Packed rectangles: " + result.rects.length().to_string())
 ### 3. SVG & JSON Export
 
 ```moonbit
-// Export to beautiful standalone SVG
-let svg = @moon_binpack.to_svg(512, 512, packed, title="My Texture Atlas")
+// Export to responsive standalone SVG
+let svg = @moon_binpack.to_svg(512, 512, packed, title="Texture Atlas Preview")
 
 // Export to JSON frame manifest
 let json = @moon_binpack.to_json(512, 512, packed)
@@ -114,9 +115,9 @@ let json = @moon_binpack.to_json(512, 512, packed)
 
 ---
 
-## 💻 CLI Usage
+## Command Line Interface
 
-Clone the repository and run the interactive CLI demo:
+Clone the repository and run the built-in CLI demo:
 
 ```bash
 git clone https://github.com/zmjknn/moon_binpack.git
@@ -153,7 +154,7 @@ Done successfully!
 
 ---
 
-## 🧪 Testing & Verification
+## Testing & Verification
 
 Run the full automated test suite:
 
@@ -168,14 +169,14 @@ All algorithms enforce strict invariants:
 
 ---
 
-## 📜 References & Attribution
+## References & Attribution
 
-- Jukka Jylänki — *"A Thousand Ways to Pack the Bin - A Practical Approach to Two-Dimensional Rectangle Bin Packing"*
+- Jukka Jylänki, *"A Thousand Ways to Pack the Bin - A Practical Approach to Two-Dimensional Rectangle Bin Packing"*
 - [RectangleBinPack (C++)](https://github.com/juj/RectangleBinPack) by Jukka Jylänki
 - [rect_packer (Rust)](https://github.com/Pao/rect_packer) by Pao
 
 ---
 
-## 📄 License
+## License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
