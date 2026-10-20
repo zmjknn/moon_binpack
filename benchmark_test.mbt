@@ -73,6 +73,7 @@ test "algorithm_comparison_benchmark" {
   let maxrects = @moon_binpack.MaxRectsPacker::new(bin_w, bin_h)
   let guillotine = @moon_binpack.GuillotinePacker::new(bin_w, bin_h)
   let shelf = @moon_binpack.ShelfPacker::new(bin_w, bin_h)
+  let skyline = @moon_binpack.SkylinePacker::new(bin_w, bin_h)
 
   let sizes = [
     (60, 40),
@@ -92,10 +93,12 @@ test "algorithm_comparison_benchmark" {
     let _ = maxrects.insert(w, h)
     let _ = guillotine.insert(w, h)
     let _ = shelf.insert(w, h)
+    let _ = skyline.insert(w, h)
   }
 
   // All packers must produce valid positive occupancy
   assert_true(maxrects.occupancy() > 0.0)
   assert_true(guillotine.occupancy() > 0.0)
   assert_true(shelf.occupancy() > 0.0)
+  assert_true(skyline.occupancy() > 0.0)
 }

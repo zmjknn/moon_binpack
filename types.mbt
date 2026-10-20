@@ -153,6 +153,13 @@ pub(all) enum ShelfHeuristic {
 } derive(Eq, Debug)
 
 ///|
+/// Heuristics for Skyline bin packing algorithm.
+pub(all) enum SkylineHeuristic {
+  BottomLeft
+  MinWasteFit
+} derive(Eq, Debug)
+
+///|
 /// Packing performance and occupancy statistics.
 pub(all) struct PackingStats {
   total_items : Int

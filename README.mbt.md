@@ -29,6 +29,11 @@ It solves the classic NP-hard 2D Bin Packing Problem (2D-BPP), providing industr
 - **Shelf Packing**:
   - Ultra-fast $O(N \log N)$ algorithm for items of similar heights (e.g. font glyphs, uniform icons).
   - Heuristics: `NextFit`, `FirstFit`, `BestAreaFit`, `BestHeightFit`, `WorstAreaFit`.
+- **Skyline Packing (High-speed Contour Layout)**:
+  - Tracks free surface boundary using a dynamic horizontal contour line.
+  - Supports `BottomLeft` and `MinWasteFit` heuristics.
+  - Dynamic skyline segment splitting and adjacent same-height segment merging.
+  - High space efficiency with significantly faster packing throughput.
 - **AtlasPacker (Multi-Bin & POT Adaptive)**:
   - Automatic multi-page allocation for overflowing item sets.
   - Adaptive Power-of-Two (POT: 64, 128, 256, 512, 1024, 2048, 4096) sizing.
@@ -83,7 +88,19 @@ let (packed, unpacked) = packer.insert_batch(
 println("Packed: " + packed.length().to_string() + ", Occupancy: " + (packer.occupancy() * 100.0).to_string() + "%")
 ```
 
-### 2. High-Level AtlasPacker (Multi-Bin & POT Growth)
+### 2. Skyline Packing
+
+```moonbit
+let skyline = @moon_binpack.SkylinePacker::new(512, 512)
+
+let (packed, unpacked) = skyline.insert_batch(
+  items,
+  heuristic=@moon_binpack.SkylineHeuristic::MinWasteFit,
+  allow_rotation=true,
+)
+```
+
+### 3. High-Level AtlasPacker (Multi-Bin & POT Growth)
 
 ```moonbit
 let options = @moon_binpack.AtlasOptions::{
@@ -103,7 +120,7 @@ println("Allocated pages: " + result.pages.length().to_string())
 println("Packed rectangles: " + result.rects.length().to_string())
 ```
 
-### 3. SVG & JSON Export
+### 4. SVG & JSON Export
 
 ```moonbit
 // Export to responsive standalone SVG
