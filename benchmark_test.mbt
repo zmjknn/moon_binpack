@@ -102,3 +102,39 @@ test "algorithm_comparison_benchmark" {
   assert_true(shelf.occupancy() > 0.0)
   assert_true(skyline.occupancy() > 0.0)
 }
+
+test "best_pack_multi_item_benchmark" {
+  let items = [
+    @moon_binpack.Size::new(128, 64),
+    @moon_binpack.Size::new(64, 128),
+    @moon_binpack.Size::new(96, 96),
+    @moon_binpack.Size::new(80, 48),
+    @moon_binpack.Size::new(48, 80),
+    @moon_binpack.Size::new(64, 64),
+    @moon_binpack.Size::new(48, 48),
+    @moon_binpack.Size::new(32, 32),
+    @moon_binpack.Size::new(32, 32),
+    @moon_binpack.Size::new(32, 64),
+    @moon_binpack.Size::new(64, 32),
+    @moon_binpack.Size::new(40, 40),
+    @moon_binpack.Size::new(24, 24),
+    @moon_binpack.Size::new(24, 24),
+    @moon_binpack.Size::new(16, 16),
+  ]
+
+  let (res, winning_algo) = @moon_binpack.best_pack(items, max_width=512, max_height=512)
+  assert_eq(res.unpacked.length(), 0)
+  assert_eq(res.rects.length(), items.length())
+  assert_true(winning_algo.length() > 0)
+  assert_true(res.stats.occupancy > 0.0)
+
+  // Verify non-overlapping
+  for i = 0; i < res.rects.length(); i = i + 1 {
+    for j = i + 1; j < res.rects.length(); j = j + 1 {
+      if res.rects[i].bin_index == res.rects[j].bin_index {
+        assert_false(res.rects[i].intersects(res.rects[j]))
+      }
+    }
+  }
+}
+
