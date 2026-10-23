@@ -111,6 +111,52 @@ pub fn Rect::intersection(self : Rect, other : Rect) -> Rect? {
 }
 
 ///|
+/// Normalized UV texture coordinates in [0.0, 1.0] for GPU rendering pipelines.
+pub(all) struct UvRect {
+  u_min : Double
+  v_min : Double
+  u_max : Double
+  v_max : Double
+} derive(Eq, Debug, Default)
+
+///|
+pub fn UvRect::new(u_min : Double, v_min : Double, u_max : Double, v_max : Double) -> UvRect {
+  { u_min, v_min, u_max, v_max }
+}
+
+///|
+/// Computes normalized UV texture coordinates for `self` within an atlas of (atlas_width, atlas_height).
+/// When `half_texel_inset = true`, applies half-texel offset compensation:
+/// u_min = (x + 0.5) / atlas_width, u_max = (x + width - 0.5) / atlas_width
+/// to strictly prevent bilinear interpolation sampling bleeding across sprite boundaries.
+pub fn Rect::to_uv(
+  self : Rect,
+  atlas_width : Int,
+  atlas_height : Int,
+  half_texel_inset~ : Bool = true
+) -> UvRect {
+  if atlas_width <= 0 || atlas_height <= 0 {
+    return Default::default()
+  }
+  let w_dbl = atlas_width.to_double()
+  let h_dbl = atlas_height.to_double()
+
+  if half_texel_inset {
+    let u_min = (self.x.to_double() + 0.5) / w_dbl
+    let v_min = (self.y.to_double() + 0.5) / h_dbl
+    let u_max = (self.right().to_double() - 0.5) / w_dbl
+    let v_max = (self.bottom().to_double() - 0.5) / h_dbl
+    { u_min, v_min, u_max, v_max }
+  } else {
+    let u_min = self.x.to_double() / w_dbl
+    let v_min = self.y.to_double() / h_dbl
+    let u_max = self.right().to_double() / w_dbl
+    let v_max = self.bottom().to_double() / h_dbl
+    { u_min, v_min, u_max, v_max }
+  }
+}
+
+///|
 /// Heuristic options for MaxRects bin packing algorithm.
 pub(all) enum MaxRectsHeuristic {
   BestShortSideFit

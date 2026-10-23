@@ -70,6 +70,32 @@ fn main {
   println("  - Occupancy:         " + best_pct.to_string() + "%")
 
   println("")
+  println("Demonstrating Extruded Pixel Texture Baker (Layer 2)...")
+  let img1 = @lib.PixelBuffer::new(48, 32, color=@lib.Rgba::from_hex(0xFF4444))
+  let img2 = @lib.PixelBuffer::new(32, 48, color=@lib.Rgba::from_hex(0x44FF44))
+  let img3 = @lib.PixelBuffer::new(24, 24, color=@lib.Rgba::from_hex(0x4444FF))
+
+  let baker_items = [
+    @lib.ImageItem::new(1, img1),
+    @lib.ImageItem::new(2, img2),
+    @lib.ImageItem::new(3, img3),
+  ]
+
+  let baker = @lib.AtlasBaker::new(extrude_margin=1)
+  let baked_pages = baker.bake(baker_items)
+  if baked_pages.length() > 0 {
+    let p0 = baked_pages[0]
+    let bmp = p0.image.to_bmp()
+    println("  - Baked Atlas Dimensions: " + p0.image.width().to_string() + "x" + p0.image.height().to_string() + " px")
+    println("  - Extruded Bleeding Margin: 1 px duplicate border")
+    println("  - Generated Windows Bitmap: " + bmp.length().to_string() + " bytes (32-bit uncompressed BMP)")
+    if p0.uv_frames.length() > 0 {
+      let uv = p0.uv_frames[0]
+      println("  - Frame #1 Shader Half-Texel UV: [" + uv.u_min.to_string() + ", " + uv.v_min.to_string() + "] -> [" + uv.u_max.to_string() + ", " + uv.v_max.to_string() + "]")
+    }
+  }
+
+  println("")
   println("Done successfully!")
 }
 
