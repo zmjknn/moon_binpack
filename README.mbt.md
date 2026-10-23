@@ -67,7 +67,8 @@ moon add zmjknn/moon_binpack
 
 Or declare it in your `moon.mod`:
 
-```moonbit
+```moonbit nocheck
+///|
 import {
   "zmjknn/moon_binpack",
 }
@@ -79,7 +80,7 @@ import {
 
 ### 1. MaxRects Packing
 
-```moonbit
+```moonbit nocheck
 let packer = @moon_binpack.MaxRectsPacker::new(512, 512)
 
 let items = [
@@ -100,7 +101,7 @@ println("Packed: " + packed.length().to_string() + ", Occupancy: " + (packer.occ
 
 ### 2. Skyline Packing
 
-```moonbit
+```moonbit nocheck
 let skyline = @moon_binpack.SkylinePacker::new(512, 512)
 
 let (packed, unpacked) = skyline.insert_batch(
@@ -112,7 +113,7 @@ let (packed, unpacked) = skyline.insert_batch(
 
 ### 3. High-Level AtlasPacker (Multi-Bin & POT Growth)
 
-```moonbit
+```moonbit nocheck
 let options = @moon_binpack.AtlasOptions::{
   max_width: 1024,
   max_height: 1024,
@@ -134,7 +135,7 @@ println("Packed rectangles: " + result.rects.length().to_string())
 
 Automatically evaluates MaxRects and Skyline heuristics to choose the most compact packing layout:
 
-```moonbit
+```moonbit nocheck
 let (best_result, winning_algo) = @moon_binpack.best_pack(items, max_width=1024, max_height=1024)
 
 println("Winning Algorithm: " + winning_algo)
@@ -143,25 +144,41 @@ println("Occupancy: " + (best_result.stats.occupancy * 100.0).to_string() + "%")
 
 ### 5. Web Ecosystem Exporters (SVG, JSON, CSS, HTML)
 
-```moonbit
+```moonbit nocheck
 // Responsive standalone SVG
+///|
 let svg = @moon_binpack.to_svg(512, 512, packed, title="Texture Atlas Preview")
 
 // Standard JSON texture atlas manifest
+
+///|
 let json = @moon_binpack.to_json(512, 512, packed)
 
 // Production-ready CSS sprite rules
-let css = @moon_binpack.to_css(packed, class_prefix="sprite", image_url="atlas.png")
+
+///|
+let css = @moon_binpack.to_css(
+  packed,
+  class_prefix="sprite",
+  image_url="atlas.png",
+)
 
 // Standalone interactive HTML inspection report
-let html = @moon_binpack.to_html(512, 512, packed, title="Atlas Inspection Report")
+
+///|
+let html = @moon_binpack.to_html(
+  512,
+  512,
+  packed,
+  title="Atlas Inspection Report",
+)
 ```
 
 ### 6. Extruded Pixel Texture Baker (Layer 2)
 
 Pack sub-images with physical 1-pixel edge extrusion and export to a standard Windows Bitmap (`.bmp`):
 
-```moonbit
+```moonbit nocheck
 let img1 = @moon_binpack.PixelBuffer::new(48, 32, color=@moon_binpack.Rgba::from_hex(0xFF4444))
 let img2 = @moon_binpack.PixelBuffer::new(32, 48, color=@moon_binpack.Rgba::from_hex(0x44FF44))
 

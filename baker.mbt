@@ -9,53 +9,56 @@ pub(all) struct Rgba {
 
 ///|
 pub fn Rgba::new(r : Byte, g : Byte, b : Byte, a~ : Byte = b'\xFF') -> Rgba {
-  { r, g, b, a }
+  { r, g, b, a, }
 }
 
 ///|
 pub fn Rgba::transparent() -> Rgba {
-  { r: b'\x00', g: b'\x00', b: b'\x00', a: b'\x00' }
+  { r: b'\x00', g: b'\x00', b: b'\x00', a: b'\x00', }
 }
 
 ///|
-pub fn Rgba::from_hex(hex : Int) -> Rgba {
+pub fn Rgba::from_hex(hex : Int32) -> Rgba {
   let r = ((hex >> 16) & 0xFF).to_byte()
   let g = ((hex >> 8) & 0xFF).to_byte()
   let b = (hex & 0xFF).to_byte()
-  let a = if (hex >> 24) != 0 { ((hex >> 24) & 0xFF).to_byte() } else { b'\xFF' }
-  { r, g, b, a }
+  let a = if hex >> 24 != 0 { ((hex >> 24) & 0xFF).to_byte() } else { b'\xFF' }
+  { r, g, b, a, }
 }
 
 ///|
 /// A 2D RGBA bitmap image buffer stored in row-major order.
 pub struct PixelBuffer {
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
   pixels : FixedArray[Byte]
 } derive(Debug)
 
 ///|
 pub fn PixelBuffer::new(
-  width : Int,
-  height : Int,
-  color~ : Rgba = Rgba::transparent()
+  width : Int32,
+  height : Int32,
+  color~ : Rgba = Rgba::transparent(),
 ) -> PixelBuffer {
   let total_bytes = width * height * 4
   let pixels = FixedArray::make(total_bytes, b'\x00')
-  let buf = { width, height, pixels }
-  if color.r != b'\x00' || color.g != b'\x00' || color.b != b'\x00' || color.a != b'\x00' {
+  let buf = { width, height, pixels, }
+  if color.r != b'\x00' ||
+    color.g != b'\x00' ||
+    color.b != b'\x00' ||
+    color.a != b'\x00' {
     buf.fill(color)
   }
   buf
 }
 
 ///|
-pub fn PixelBuffer::width(self : PixelBuffer) -> Int {
+pub fn PixelBuffer::width(self : PixelBuffer) -> Int32 {
   self.width
 }
 
 ///|
-pub fn PixelBuffer::height(self : PixelBuffer) -> Int {
+pub fn PixelBuffer::height(self : PixelBuffer) -> Int32 {
   self.height
 }
 
@@ -72,7 +75,7 @@ pub fn PixelBuffer::fill(self : PixelBuffer, color : Rgba) -> Unit {
 }
 
 ///|
-pub fn PixelBuffer::get_pixel(self : PixelBuffer, x : Int, y : Int) -> Rgba {
+pub fn PixelBuffer::get_pixel(self : PixelBuffer, x : Int32, y : Int32) -> Rgba {
   if x < 0 || x >= self.width || y < 0 || y >= self.height {
     return Rgba::transparent()
   }
@@ -86,7 +89,12 @@ pub fn PixelBuffer::get_pixel(self : PixelBuffer, x : Int, y : Int) -> Rgba {
 }
 
 ///|
-pub fn PixelBuffer::set_pixel(self : PixelBuffer, x : Int, y : Int, color : Rgba) -> Unit {
+pub fn PixelBuffer::set_pixel(
+  self : PixelBuffer,
+  x : Int32,
+  y : Int32,
+  color : Rgba,
+) -> Unit {
   if x < 0 || x >= self.width || y < 0 || y >= self.height {
     return
   }
@@ -103,9 +111,9 @@ pub fn PixelBuffer::set_pixel(self : PixelBuffer, x : Int, y : Int, color : Rgba
 pub fn PixelBuffer::blit(
   self : PixelBuffer,
   src : PixelBuffer,
-  dst_x : Int,
-  dst_y : Int,
-  rotated~ : Bool = false
+  dst_x : Int32,
+  dst_y : Int32,
+  rotated~ : Bool = false,
 ) -> Unit {
   if !rotated {
     for sy = 0; sy < src.height; sy = sy + 1 {
@@ -147,7 +155,11 @@ pub fn PixelBuffer::blit(
 ///|
 /// Eliminates GPU bilinear texture sampling bleeding by duplicating
 /// the outer 1-pixel border of `rect` into the surrounding padding margin.
-pub fn PixelBuffer::extrude_rect(self : PixelBuffer, rect : Rect, margin~ : Int = 1) -> Unit {
+pub fn PixelBuffer::extrude_rect(
+  self : PixelBuffer,
+  rect : Rect,
+  margin~ : Int32 = 1,
+) -> Unit {
   if margin <= 0 || rect.width <= 0 || rect.height <= 0 {
     return
   }
@@ -193,15 +205,28 @@ pub fn PixelBuffer::extrude_rect(self : PixelBuffer, rect : Rect, margin~ : Int 
       }
       // Top-right
       if rect.right() - 1 + mx < self.width && rect.y - my >= 0 {
-        self.set_pixel(rect.right() - 1 + mx, rect.y - my, self.get_pixel(rect.right() - 1, rect.y))
+        self.set_pixel(
+          rect.right() - 1 + mx,
+          rect.y - my,
+          self.get_pixel(rect.right() - 1, rect.y),
+        )
       }
       // Bottom-left
       if rect.x - mx >= 0 && rect.bottom() - 1 + my < self.height {
-        self.set_pixel(rect.x - mx, rect.bottom() - 1 + my, self.get_pixel(rect.x, rect.bottom() - 1))
+        self.set_pixel(
+          rect.x - mx,
+          rect.bottom() - 1 + my,
+          self.get_pixel(rect.x, rect.bottom() - 1),
+        )
       }
       // Bottom-right
-      if rect.right() - 1 + mx < self.width && rect.bottom() - 1 + my < self.height {
-        self.set_pixel(rect.right() - 1 + mx, rect.bottom() - 1 + my, self.get_pixel(rect.right() - 1, rect.bottom() - 1))
+      if rect.right() - 1 + mx < self.width &&
+        rect.bottom() - 1 + my < self.height {
+        self.set_pixel(
+          rect.right() - 1 + mx,
+          rect.bottom() - 1 + my,
+          self.get_pixel(rect.right() - 1, rect.bottom() - 1),
+        )
       }
     }
   }
@@ -290,19 +315,19 @@ pub fn PixelBuffer::to_bmp_bytes(self : PixelBuffer) -> Bytes {
 ///|
 /// Sub-image item to be packed and baked into a master atlas.
 pub(all) struct ImageItem {
-  id : Int
+  id : Int32
   image : PixelBuffer
 } derive(Debug)
 
 ///|
-pub fn ImageItem::new(id : Int, image : PixelBuffer) -> ImageItem {
-  { id, image }
+pub fn ImageItem::new(id : Int32, image : PixelBuffer) -> ImageItem {
+  { id, image, }
 }
 
 ///|
 /// Result of baking multiple sub-images into an atlas page.
 pub(all) struct BakedAtlas {
-  page_index : Int
+  page_index : Int32
   image : PixelBuffer
   frames : Array[Rect]
   uv_frames : Array[UvRect]
@@ -313,15 +338,15 @@ pub(all) struct BakedAtlas {
 /// and applies physical 1-pixel edge extrusion to completely eliminate GPU sampling bleeding.
 pub struct AtlasBaker {
   options : AtlasOptions
-  extrude_margin : Int
+  extrude_margin : Int32
 } derive(Debug)
 
 ///|
 pub fn AtlasBaker::new(
   options~ : AtlasOptions = AtlasOptions::default(),
-  extrude_margin~ : Int = 1
+  extrude_margin~ : Int32 = 1,
 ) -> AtlasBaker {
-  { options, extrude_margin }
+  { options, extrude_margin, }
 }
 
 ///|
@@ -331,7 +356,10 @@ pub fn AtlasBaker::new(
 /// 2. Pixel copying (blitting) with rotation support
 /// 3. Physical 1-pixel edge color extrusion to eliminate GPU sampling bleeding
 /// 4. Half-texel UV coordinate calculation for GPU shaders
-pub fn AtlasBaker::bake(self : AtlasBaker, items : Array[ImageItem]) -> Array[BakedAtlas] {
+pub fn AtlasBaker::bake(
+  self : AtlasBaker,
+  items : Array[ImageItem],
+) -> Array[BakedAtlas] {
   if items.length() == 0 {
     return []
   }
@@ -349,7 +377,11 @@ pub fn AtlasBaker::bake(self : AtlasBaker, items : Array[ImageItem]) -> Array[Ba
 
   for p_idx = 0; p_idx < result.pages.length(); p_idx = p_idx + 1 {
     let page_bin = result.pages[p_idx]
-    let canvas = PixelBuffer::new(page_bin.width, page_bin.height, color=Rgba::transparent())
+    let canvas = PixelBuffer::new(
+      page_bin.width,
+      page_bin.height,
+      color=Rgba::transparent(),
+    )
     let page_rects = []
     let page_uvs = []
 

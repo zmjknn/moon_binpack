@@ -1,28 +1,31 @@
 ///|
 /// A horizontal segment in the Skyline bin packing algorithm.
 pub(all) struct SkylineNode {
-  x : Int
-  y : Int
-  width : Int
+  x : Int32
+  y : Int32
+  width : Int32
 } derive(Eq, Debug, Default)
 
 ///|
-pub fn SkylineNode::new(x : Int, y : Int, width : Int) -> SkylineNode {
-  { x, y, width }
+pub fn SkylineNode::new(x : Int32, y : Int32, width : Int32) -> SkylineNode {
+  { x, y, width, }
 }
 
 ///|
 /// 2D bin packer based on the Skyline algorithm with Min-Waste and Bottom-Left heuristics.
 pub struct SkylinePacker {
-  bin_width : Int
-  bin_height : Int
+  bin_width : Int32
+  bin_height : Int32
   skyline : Array[SkylineNode]
   used_rectangles : Array[Rect]
-  mut used_surface_area : Int
+  mut used_surface_area : Int32
 } derive(Debug)
 
 ///|
-pub fn SkylinePacker::new(bin_width : Int, bin_height : Int) -> SkylinePacker {
+pub fn SkylinePacker::new(
+  bin_width : Int32,
+  bin_height : Int32,
+) -> SkylinePacker {
   let initial = [SkylineNode::new(0, 0, bin_width)]
   {
     bin_width,
@@ -34,12 +37,12 @@ pub fn SkylinePacker::new(bin_width : Int, bin_height : Int) -> SkylinePacker {
 }
 
 ///|
-pub fn SkylinePacker::bin_width(self : SkylinePacker) -> Int {
+pub fn SkylinePacker::bin_width(self : SkylinePacker) -> Int32 {
   self.bin_width
 }
 
 ///|
-pub fn SkylinePacker::bin_height(self : SkylinePacker) -> Int {
+pub fn SkylinePacker::bin_height(self : SkylinePacker) -> Int32 {
   self.bin_height
 }
 
@@ -67,10 +70,10 @@ pub fn SkylinePacker::occupancy(self : SkylinePacker) -> Double {
 /// Returns (supported_y, waste_area, fits).
 fn SkylinePacker::fit_rectangle(
   self : SkylinePacker,
-  node_index : Int,
-  width : Int,
-  height : Int
-) -> (Int, Int, Bool) {
+  node_index : Int32,
+  width : Int32,
+  height : Int32,
+) -> (Int32, Int32, Bool) {
   let node = self.skyline[node_index]
   let x = node.x
 
@@ -110,10 +113,10 @@ fn SkylinePacker::fit_rectangle(
 /// Finds the best position for a rectangle of (width, height) using the specified heuristic.
 fn SkylinePacker::find_rectangle(
   self : SkylinePacker,
-  width : Int,
-  height : Int,
+  width : Int32,
+  height : Int32,
   heuristic : SkylineHeuristic,
-  allow_rotation : Bool
+  allow_rotation : Bool,
 ) -> Rect? {
   let mut best_node = Rect::new(0, 0, 0, 0)
   let mut best_score1 = 2147483647
@@ -131,7 +134,13 @@ fn SkylinePacker::find_rectangle(
       if s1 < best_score1 || (s1 == best_score1 && s2 < best_score2) {
         best_score1 = s1
         best_score2 = s2
-        best_node = Rect::new(self.skyline[i].x, y, width, height, rotated=false)
+        best_node = Rect::new(
+          self.skyline[i].x,
+          y,
+          width,
+          height,
+          rotated=false,
+        )
         found = true
       }
     }
@@ -147,7 +156,13 @@ fn SkylinePacker::find_rectangle(
         if s1 < best_score1 || (s1 == best_score1 && s2 < best_score2) {
           best_score1 = s1
           best_score2 = s2
-          best_node = Rect::new(self.skyline[i].x, y_rot, height, width, rotated=true)
+          best_node = Rect::new(
+            self.skyline[i].x,
+            y_rot,
+            height,
+            width,
+            rotated=true,
+          )
           found = true
         }
       }
@@ -163,8 +178,15 @@ fn SkylinePacker::find_rectangle(
 
 ///|
 /// Updates the skyline profile with the new level introduced by `placed`.
-fn SkylinePacker::add_skyline_level(self : SkylinePacker, placed : Rect) -> Unit {
-  let new_node = SkylineNode::new(placed.x, placed.y + placed.height, placed.width)
+fn SkylinePacker::add_skyline_level(
+  self : SkylinePacker,
+  placed : Rect,
+) -> Unit {
+  let new_node = SkylineNode::new(
+    placed.x,
+    placed.y + placed.height,
+    placed.width,
+  )
   let new_skyline = []
 
   for node in self.skyline {
@@ -180,7 +202,13 @@ fn SkylinePacker::add_skyline_level(self : SkylinePacker, placed : Rect) -> Unit
         new_skyline.push(SkylineNode::new(node.x, node.y, placed.x - node.x))
       }
       if node.x + node.width > placed.right() {
-        new_skyline.push(SkylineNode::new(placed.right(), node.y, (node.x + node.width) - placed.right()))
+        new_skyline.push(
+          SkylineNode::new(
+            placed.right(),
+            node.y,
+            node.x + node.width - placed.right(),
+          ),
+        )
       }
     }
   }
@@ -227,11 +255,11 @@ fn SkylinePacker::merge_skyline(self : SkylinePacker) -> Unit {
 /// Inserts a rectangle of dimensions (width, height) using the Skyline algorithm.
 pub fn SkylinePacker::insert(
   self : SkylinePacker,
-  width : Int,
-  height : Int,
-  id~ : Int = 0,
+  width : Int32,
+  height : Int32,
+  id~ : Int32 = 0,
   heuristic~ : SkylineHeuristic = SkylineHeuristic::BottomLeft,
-  allow_rotation~ : Bool = true
+  allow_rotation~ : Bool = true,
 ) -> Rect? {
   if width <= 0 || height <= 0 {
     return None
@@ -263,7 +291,7 @@ pub fn SkylinePacker::insert_batch(
   self : SkylinePacker,
   sizes : Array[Size],
   heuristic~ : SkylineHeuristic = SkylineHeuristic::BottomLeft,
-  allow_rotation~ : Bool = true
+  allow_rotation~ : Bool = true,
 ) -> (Array[Rect], Array[Size]) {
   let indexed = []
   for i = 0; i < sizes.length(); i = i + 1 {
@@ -286,7 +314,8 @@ pub fn SkylinePacker::insert_batch(
 
   for item in indexed {
     let (sz, orig_id) = item
-    match self.insert(sz.width, sz.height, id=orig_id, heuristic~, allow_rotation~) {
+    match
+      self.insert(sz.width, sz.height, id=orig_id, heuristic~, allow_rotation~) {
       Some(r) => packed.push(r)
       None => unpacked.push(sz)
     }

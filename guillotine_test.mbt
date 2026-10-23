@@ -1,3 +1,4 @@
+///|
 test "guillotine_basic_insertion" {
   let packer = @moon_binpack.GuillotinePacker::new(100, 100)
 
@@ -32,6 +33,7 @@ test "guillotine_basic_insertion" {
   assert_eq(packer.occupancy(), 1.0)
 }
 
+///|
 test "guillotine_heuristics_and_rotation" {
   let packer = @moon_binpack.GuillotinePacker::new(100, 100)
 

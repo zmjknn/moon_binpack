@@ -1,3 +1,4 @@
+///|
 test "rgba_and_pixel_buffer" {
   let red = @moon_binpack.Rgba::new(b'\xFF', b'\x00', b'\x00')
   let green = @moon_binpack.Rgba::from_hex(0x00FF00)
@@ -23,8 +24,13 @@ test "rgba_and_pixel_buffer" {
   assert_eq(buf.get_pixel(10, 10), red)
 }
 
+///|
 test "pixel_buffer_blit" {
-  let canvas = @moon_binpack.PixelBuffer::new(50, 50, color=@moon_binpack.Rgba::transparent())
+  let canvas = @moon_binpack.PixelBuffer::new(
+    50,
+    50,
+    color=@moon_binpack.Rgba::transparent(),
+  )
   let blue = @moon_binpack.Rgba::new(b'\x00', b'\x00', b'\xFF')
   let sprite = @moon_binpack.PixelBuffer::new(10, 10, color=blue)
 
@@ -39,8 +45,13 @@ test "pixel_buffer_blit" {
   assert_eq(canvas.get_pixel(25, 20).a, b'\x00')
 }
 
+///|
 test "pixel_buffer_extrude_bleeding_prevention" {
-  let canvas = @moon_binpack.PixelBuffer::new(30, 30, color=@moon_binpack.Rgba::transparent())
+  let canvas = @moon_binpack.PixelBuffer::new(
+    30,
+    30,
+    color=@moon_binpack.Rgba::transparent(),
+  )
   let red = @moon_binpack.Rgba::new(b'\xFF', b'\x00', b'\x00')
 
   // Place a 4x4 red square at (10, 10)
@@ -72,6 +83,7 @@ test "pixel_buffer_extrude_bleeding_prevention" {
   assert_eq(canvas.get_pixel(5, 5).a, b'\x00')
 }
 
+///|
 test "bmp_encoding_validity" {
   let w = 16
   let h = 16
@@ -100,6 +112,7 @@ test "bmp_encoding_validity" {
   assert_eq(bmp_bytes.length(), expected_size)
 }
 
+///|
 test "half_texel_uv_offset" {
   let r = @moon_binpack.Rect::new(10, 20, 30, 40)
   let atlas_w = 100
@@ -124,6 +137,7 @@ test "half_texel_uv_offset" {
   assert_eq(raw_uv.v_max, 0.6)
 }
 
+///|
 test "atlas_baker_full_pipeline" {
   let c1 = @moon_binpack.Rgba::new(b'\xFF', b'\x00', b'\x00')
   let c2 = @moon_binpack.Rgba::new(b'\x00', b'\xFF', b'\x00')

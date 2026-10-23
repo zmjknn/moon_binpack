@@ -22,4 +22,3 @@ keywords = [
 preferred_target = "wasm"
 
 description = "Industrial-grade 2D rectangle bin packing and texture atlas layout engine in pure MoonBit."
-

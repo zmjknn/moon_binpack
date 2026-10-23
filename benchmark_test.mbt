@@ -1,3 +1,4 @@
+///|
 test "benchmark_50_items_non_overlapping_invariant" {
   let bin_w = 512
   let bin_h = 512
@@ -66,6 +67,7 @@ test "benchmark_50_items_non_overlapping_invariant" {
   assert_true(packer.occupancy() > 0.25)
 }
 
+///|
 test "algorithm_comparison_benchmark" {
   let bin_w = 300
   let bin_h = 300
@@ -103,6 +105,7 @@ test "algorithm_comparison_benchmark" {
   assert_true(skyline.occupancy() > 0.0)
 }
 
+///|
 test "best_pack_multi_item_benchmark" {
   let items = [
     @moon_binpack.Size::new(128, 64),
@@ -122,7 +125,11 @@ test "best_pack_multi_item_benchmark" {
     @moon_binpack.Size::new(16, 16),
   ]
 
-  let (res, winning_algo) = @moon_binpack.best_pack(items, max_width=512, max_height=512)
+  let (res, winning_algo) = @moon_binpack.best_pack(
+    items,
+    max_width=512,
+    max_height=512,
+  )
   assert_eq(res.unpacked.length(), 0)
   assert_eq(res.rects.length(), items.length())
   assert_true(winning_algo.length() > 0)
@@ -137,4 +144,3 @@ test "best_pack_multi_item_benchmark" {
     }
   }
 }
-

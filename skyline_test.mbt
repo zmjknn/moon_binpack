@@ -1,3 +1,4 @@
+///|
 test "skyline_basic_insertion" {
   let packer = @moon_binpack.SkylinePacker::new(100, 100)
 
@@ -25,6 +26,7 @@ test "skyline_basic_insertion" {
   assert_eq(packer.occupancy(), 1.0)
 }
 
+///|
 test "skyline_rotation_support" {
   // Bin is 100x50. A 20x90 item won't fit unless rotated to 90x20
   let packer = @moon_binpack.SkylinePacker::new(100, 50)
@@ -45,6 +47,7 @@ test "skyline_rotation_support" {
   assert_eq(r_fail, None)
 }
 
+///|
 test "skyline_heuristics_comparison" {
   let items = [
     @moon_binpack.Size::new(40, 30),
@@ -66,7 +69,9 @@ test "skyline_heuristics_comparison" {
   // Verify non-overlapping invariant for BottomLeft
   for i = 0; i < packed_bl.length(); i = i + 1 {
     let r1 = packed_bl[i]
-    assert_true(r1.x >= 0 && r1.y >= 0 && r1.right() <= 100 && r1.bottom() <= 100)
+    assert_true(
+      r1.x >= 0 && r1.y >= 0 && r1.right() <= 100 && r1.bottom() <= 100,
+    )
     for j = i + 1; j < packed_bl.length(); j = j + 1 {
       assert_false(r1.intersects(packed_bl[j]))
     }
@@ -83,13 +88,16 @@ test "skyline_heuristics_comparison" {
   // Verify non-overlapping invariant for MinWasteFit
   for i = 0; i < packed_mw.length(); i = i + 1 {
     let r1 = packed_mw[i]
-    assert_true(r1.x >= 0 && r1.y >= 0 && r1.right() <= 100 && r1.bottom() <= 100)
+    assert_true(
+      r1.x >= 0 && r1.y >= 0 && r1.right() <= 100 && r1.bottom() <= 100,
+    )
     for j = i + 1; j < packed_mw.length(); j = j + 1 {
       assert_false(r1.intersects(packed_mw[j]))
     }
   }
 }
 
+///|
 test "skyline_node_types" {
   let node = @moon_binpack.SkylineNode::new(10, 20, 30)
   assert_eq(node.x, 10)

@@ -1,3 +1,4 @@
+///|
 test "atlas_packer_auto_grow" {
   let opts = @moon_binpack.AtlasOptions::{
     max_width: 1024,
@@ -33,6 +34,7 @@ test "atlas_packer_auto_grow" {
   }
 }
 
+///|
 test "atlas_packer_multi_bin_overflow" {
   // Bins are small (60x60). 4 items of 50x50 can't fit into one 60x60 bin
   let opts = @moon_binpack.AtlasOptions::{
@@ -63,6 +65,7 @@ test "atlas_packer_multi_bin_overflow" {
   assert_eq(res.rects[2].bin_index, 2)
 }
 
+///|
 test "atlas_packer_skyline" {
   let opts = @moon_binpack.AtlasOptions::{
     max_width: 512,
@@ -83,7 +86,10 @@ test "atlas_packer_skyline" {
     @moon_binpack.Size::new(30, 30),
   ]
 
-  let res = packer.pack_skyline(items, heuristic=@moon_binpack.SkylineHeuristic::MinWasteFit)
+  let res = packer.pack_skyline(
+    items,
+    heuristic=@moon_binpack.SkylineHeuristic::MinWasteFit,
+  )
   assert_eq(res.unpacked.length(), 0)
   assert_eq(res.rects.length(), 5)
   assert_eq(res.pages.length(), 1)
@@ -95,6 +101,7 @@ test "atlas_packer_skyline" {
   }
 }
 
+///|
 test "best_pack_arena" {
   let items = [
     @moon_binpack.Size::new(100, 60),
@@ -107,7 +114,11 @@ test "best_pack_arena" {
     @moon_binpack.Size::new(45, 45),
   ]
 
-  let (res, algo_name) = @moon_binpack.best_pack(items, max_width=512, max_height=512)
+  let (res, algo_name) = @moon_binpack.best_pack(
+    items,
+    max_width=512,
+    max_height=512,
+  )
   assert_eq(res.unpacked.length(), 0)
   assert_eq(res.rects.length(), items.length())
   assert_true(algo_name.length() > 0)
@@ -123,10 +134,10 @@ test "best_pack_arena" {
   }
 }
 
+///|
 test "best_pack_empty" {
   let empty_items : Array[@moon_binpack.Size] = []
   let (res, algo_name) = @moon_binpack.best_pack(empty_items)
   assert_eq(res.rects.length(), 0)
   assert_eq(algo_name, "None")
 }
-

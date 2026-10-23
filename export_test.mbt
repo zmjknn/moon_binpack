@@ -1,3 +1,4 @@
+///|
 test "export_svg_and_json" {
   let rects = [
     @moon_binpack.Rect::new(0, 0, 50, 40, id=1),
@@ -17,13 +18,18 @@ test "export_svg_and_json" {
   assert_true(json.contains("\"id\": 1"))
 }
 
+///|
 test "export_css_spritesheet" {
   let rects = [
     @moon_binpack.Rect::new(0, 0, 32, 32, id=10),
     @moon_binpack.Rect::new(32, 0, 48, 64, id=11),
   ]
 
-  let css = @moon_binpack.to_css(rects, class_prefix="icon", image_url="sprites.png")
+  let css = @moon_binpack.to_css(
+    rects,
+    class_prefix="icon",
+    image_url="sprites.png",
+  )
   assert_true(css.contains(".icon {"))
   assert_true(css.contains("background-image: url('sprites.png');"))
   assert_true(css.contains(".icon-10 {"))
@@ -36,6 +42,7 @@ test "export_css_spritesheet" {
   assert_true(css.contains("background-position: -32px -0px;"))
 }
 
+///|
 test "export_html_report" {
   let rects = [
     @moon_binpack.Rect::new(0, 0, 100, 100, id=1, rotated=true),
@@ -54,4 +61,3 @@ test "export_html_report" {
   assert_true(html.contains("<span class=\"tag tag-rot\">Yes</span>"))
   assert_true(html.contains("</html>"))
 }
-

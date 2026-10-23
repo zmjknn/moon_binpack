@@ -1,39 +1,33 @@
 ///|
 /// A horizontal shelf in the bin.
 struct Shelf {
-  mut x : Int
-  y : Int
-  height : Int
+  mut x : Int32
+  y : Int32
+  height : Int32
 } derive(Eq, Debug)
 
 ///|
 /// 2D bin packer based on horizontal shelves.
 pub struct ShelfPacker {
-  bin_width : Int
-  bin_height : Int
+  bin_width : Int32
+  bin_height : Int32
   shelves : Array[Shelf]
-  mut current_y : Int
-  mut used_surface_area : Int
+  mut current_y : Int32
+  mut used_surface_area : Int32
 } derive(Debug)
 
 ///|
-pub fn ShelfPacker::new(bin_width : Int, bin_height : Int) -> ShelfPacker {
-  {
-    bin_width,
-    bin_height,
-    shelves: [],
-    current_y: 0,
-    used_surface_area: 0,
-  }
+pub fn ShelfPacker::new(bin_width : Int32, bin_height : Int32) -> ShelfPacker {
+  { bin_width, bin_height, shelves: [], current_y: 0, used_surface_area: 0, }
 }
 
 ///|
-pub fn ShelfPacker::bin_width(self : ShelfPacker) -> Int {
+pub fn ShelfPacker::bin_width(self : ShelfPacker) -> Int32 {
   self.bin_width
 }
 
 ///|
-pub fn ShelfPacker::bin_height(self : ShelfPacker) -> Int {
+pub fn ShelfPacker::bin_height(self : ShelfPacker) -> Int32 {
   self.bin_height
 }
 
@@ -51,12 +45,15 @@ pub fn ShelfPacker::occupancy(self : ShelfPacker) -> Double {
 /// Attempts to insert a rectangle of dimensions (width, height) using the specified heuristic.
 pub fn ShelfPacker::insert(
   self : ShelfPacker,
-  width : Int,
-  height : Int,
-  id~ : Int = 0,
-  heuristic~ : ShelfHeuristic = ShelfHeuristic::BestAreaFit
+  width : Int32,
+  height : Int32,
+  id~ : Int32 = 0,
+  heuristic~ : ShelfHeuristic = ShelfHeuristic::BestAreaFit,
 ) -> Rect? {
-  if width <= 0 || height <= 0 || width > self.bin_width || height > self.bin_height {
+  if width <= 0 ||
+    height <= 0 ||
+    width > self.bin_width ||
+    height > self.bin_height {
     return None
   }
 
@@ -70,7 +67,12 @@ pub fn ShelfPacker::insert(
 }
 
 ///|
-fn ShelfPacker::insert_next_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_next_fit(
+  self : ShelfPacker,
+  width : Int32,
+  height : Int32,
+  id : Int32,
+) -> Rect? {
   if self.shelves.length() > 0 {
     let last = self.shelves[self.shelves.length() - 1]
     if last.x + width <= self.bin_width && height <= last.height {
@@ -83,7 +85,7 @@ fn ShelfPacker::insert_next_fit(self : ShelfPacker, width : Int, height : Int, i
 
   // Create new shelf
   if self.current_y + height <= self.bin_height {
-    let new_shelf = Shelf::{ x: width, y: self.current_y, height }
+    let new_shelf = Shelf::{ x: width, y: self.current_y, height, }
     let r = Rect::new(0, self.current_y, width, height, id~)
     self.current_y = self.current_y + height
     self.shelves.push(new_shelf)
@@ -95,7 +97,12 @@ fn ShelfPacker::insert_next_fit(self : ShelfPacker, width : Int, height : Int, i
 }
 
 ///|
-fn ShelfPacker::insert_first_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_first_fit(
+  self : ShelfPacker,
+  width : Int32,
+  height : Int32,
+  id : Int32,
+) -> Rect? {
   for shelf in self.shelves {
     if shelf.x + width <= self.bin_width && height <= shelf.height {
       let r = Rect::new(shelf.x, shelf.y, width, height, id~)
@@ -107,7 +114,7 @@ fn ShelfPacker::insert_first_fit(self : ShelfPacker, width : Int, height : Int, 
 
   // Start new shelf
   if self.current_y + height <= self.bin_height {
-    let new_shelf = Shelf::{ x: width, y: self.current_y, height }
+    let new_shelf = Shelf::{ x: width, y: self.current_y, height, }
     let r = Rect::new(0, self.current_y, width, height, id~)
     self.current_y = self.current_y + height
     self.shelves.push(new_shelf)
@@ -119,7 +126,12 @@ fn ShelfPacker::insert_first_fit(self : ShelfPacker, width : Int, height : Int, 
 }
 
 ///|
-fn ShelfPacker::insert_best_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_best_area_fit(
+  self : ShelfPacker,
+  width : Int32,
+  height : Int32,
+  id : Int32,
+) -> Rect? {
   let mut best_index = -1
   let mut min_remaining_area = 2147483647
 
@@ -141,7 +153,7 @@ fn ShelfPacker::insert_best_area_fit(self : ShelfPacker, width : Int, height : I
     self.used_surface_area = self.used_surface_area + width * height
     Some(r)
   } else if self.current_y + height <= self.bin_height {
-    let new_shelf = Shelf::{ x: width, y: self.current_y, height }
+    let new_shelf = Shelf::{ x: width, y: self.current_y, height, }
     let r = Rect::new(0, self.current_y, width, height, id~)
     self.current_y = self.current_y + height
     self.shelves.push(new_shelf)
@@ -153,7 +165,12 @@ fn ShelfPacker::insert_best_area_fit(self : ShelfPacker, width : Int, height : I
 }
 
 ///|
-fn ShelfPacker::insert_best_height_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_best_height_fit(
+  self : ShelfPacker,
+  width : Int32,
+  height : Int32,
+  id : Int32,
+) -> Rect? {
   let mut best_index = -1
   let mut min_height_diff = 2147483647
 
@@ -175,7 +192,7 @@ fn ShelfPacker::insert_best_height_fit(self : ShelfPacker, width : Int, height :
     self.used_surface_area = self.used_surface_area + width * height
     Some(r)
   } else if self.current_y + height <= self.bin_height {
-    let new_shelf = Shelf::{ x: width, y: self.current_y, height }
+    let new_shelf = Shelf::{ x: width, y: self.current_y, height, }
     let r = Rect::new(0, self.current_y, width, height, id~)
     self.current_y = self.current_y + height
     self.shelves.push(new_shelf)
@@ -187,7 +204,12 @@ fn ShelfPacker::insert_best_height_fit(self : ShelfPacker, width : Int, height :
 }
 
 ///|
-fn ShelfPacker::insert_worst_area_fit(self : ShelfPacker, width : Int, height : Int, id : Int) -> Rect? {
+fn ShelfPacker::insert_worst_area_fit(
+  self : ShelfPacker,
+  width : Int32,
+  height : Int32,
+  id : Int32,
+) -> Rect? {
   let mut best_index = -1
   let mut max_remaining_area = -1
 
@@ -209,7 +231,7 @@ fn ShelfPacker::insert_worst_area_fit(self : ShelfPacker, width : Int, height : 
     self.used_surface_area = self.used_surface_area + width * height
     Some(r)
   } else if self.current_y + height <= self.bin_height {
-    let new_shelf = Shelf::{ x: width, y: self.current_y, height }
+    let new_shelf = Shelf::{ x: width, y: self.current_y, height, }
     let r = Rect::new(0, self.current_y, width, height, id~)
     self.current_y = self.current_y + height
     self.shelves.push(new_shelf)

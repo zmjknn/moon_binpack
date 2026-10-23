@@ -1,34 +1,34 @@
 ///|
 /// Represents a 2D size with integer width and height.
 pub(all) struct Size {
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
 } derive(Eq, Debug, Default)
 
 ///|
-pub fn Size::new(width : Int, height : Int) -> Size {
-  { width, height }
+pub fn Size::new(width : Int32, height : Int32) -> Size {
+  { width, height, }
 }
 
 ///|
-pub fn Size::area(self : Size) -> Int {
+pub fn Size::area(self : Size) -> Int32 {
   self.width * self.height
 }
 
 ///|
 /// Represents a target bin with width and height boundaries.
 pub(all) struct Bin {
-  width : Int
-  height : Int
+  width : Int32
+  height : Int32
 } derive(Eq, Debug, Default)
 
 ///|
-pub fn Bin::new(width : Int, height : Int) -> Bin {
-  { width, height }
+pub fn Bin::new(width : Int32, height : Int32) -> Bin {
+  { width, height, }
 }
 
 ///|
-pub fn Bin::area(self : Bin) -> Int {
+pub fn Bin::area(self : Bin) -> Int32 {
   self.width * self.height
 }
 
@@ -36,45 +36,45 @@ pub fn Bin::area(self : Bin) -> Int {
 /// Represents a 2D rectangle with position (x, y), dimensions (width, height),
 /// an optional identifier, rotation flag, and bin page index.
 pub(all) struct Rect {
-  x : Int
-  y : Int
-  width : Int
-  height : Int
-  id : Int
+  x : Int32
+  y : Int32
+  width : Int32
+  height : Int32
+  id : Int32
   rotated : Bool
-  bin_index : Int
+  bin_index : Int32
 } derive(Eq, Debug, Default)
 
 ///|
 pub fn Rect::new(
-  x : Int,
-  y : Int,
-  width : Int,
-  height : Int,
-  id~ : Int = 0,
+  x : Int32,
+  y : Int32,
+  width : Int32,
+  height : Int32,
+  id~ : Int32 = 0,
   rotated~ : Bool = false,
-  bin_index~ : Int = 0
+  bin_index~ : Int32 = 0,
 ) -> Rect {
-  { x, y, width, height, id, rotated, bin_index }
+  { x, y, width, height, id, rotated, bin_index, }
 }
 
 ///|
-pub fn Rect::area(self : Rect) -> Int {
+pub fn Rect::area(self : Rect) -> Int32 {
   self.width * self.height
 }
 
 ///|
-pub fn Rect::right(self : Rect) -> Int {
+pub fn Rect::right(self : Rect) -> Int32 {
   self.x + self.width
 }
 
 ///|
-pub fn Rect::bottom(self : Rect) -> Int {
+pub fn Rect::bottom(self : Rect) -> Int32 {
   self.y + self.height
 }
 
 ///|
-pub fn Rect::perimeter(self : Rect) -> Int {
+pub fn Rect::perimeter(self : Rect) -> Int32 {
   2 * (self.width + self.height)
 }
 
@@ -101,8 +101,16 @@ pub fn Rect::intersects(self : Rect, other : Rect) -> Bool {
 pub fn Rect::intersection(self : Rect, other : Rect) -> Rect? {
   let nx = if self.x > other.x { self.x } else { other.x }
   let ny = if self.y > other.y { self.y } else { other.y }
-  let nr = if self.right() < other.right() { self.right() } else { other.right() }
-  let nb = if self.bottom() < other.bottom() { self.bottom() } else { other.bottom() }
+  let nr = if self.right() < other.right() {
+    self.right()
+  } else {
+    other.right()
+  }
+  let nb = if self.bottom() < other.bottom() {
+    self.bottom()
+  } else {
+    other.bottom()
+  }
   if nr > nx && nb > ny {
     Some(Rect::new(nx, ny, nr - nx, nb - ny))
   } else {
@@ -120,8 +128,13 @@ pub(all) struct UvRect {
 } derive(Eq, Debug, Default)
 
 ///|
-pub fn UvRect::new(u_min : Double, v_min : Double, u_max : Double, v_max : Double) -> UvRect {
-  { u_min, v_min, u_max, v_max }
+pub fn UvRect::new(
+  u_min : Double,
+  v_min : Double,
+  u_max : Double,
+  v_max : Double,
+) -> UvRect {
+  { u_min, v_min, u_max, v_max, }
 }
 
 ///|
@@ -131,9 +144,9 @@ pub fn UvRect::new(u_min : Double, v_min : Double, u_max : Double, v_max : Doubl
 /// to strictly prevent bilinear interpolation sampling bleeding across sprite boundaries.
 pub fn Rect::to_uv(
   self : Rect,
-  atlas_width : Int,
-  atlas_height : Int,
-  half_texel_inset~ : Bool = true
+  atlas_width : Int32,
+  atlas_height : Int32,
+  half_texel_inset~ : Bool = true,
 ) -> UvRect {
   if atlas_width <= 0 || atlas_height <= 0 {
     return Default::default()
@@ -146,13 +159,13 @@ pub fn Rect::to_uv(
     let v_min = (self.y.to_double() + 0.5) / h_dbl
     let u_max = (self.right().to_double() - 0.5) / w_dbl
     let v_max = (self.bottom().to_double() - 0.5) / h_dbl
-    { u_min, v_min, u_max, v_max }
+    { u_min, v_min, u_max, v_max, }
   } else {
     let u_min = self.x.to_double() / w_dbl
     let v_min = self.y.to_double() / h_dbl
     let u_max = self.right().to_double() / w_dbl
     let v_max = self.bottom().to_double() / h_dbl
-    { u_min, v_min, u_max, v_max }
+    { u_min, v_min, u_max, v_max, }
   }
 }
 
@@ -208,22 +221,22 @@ pub(all) enum SkylineHeuristic {
 ///|
 /// Packing performance and occupancy statistics.
 pub(all) struct PackingStats {
-  total_items : Int
-  packed_items : Int
-  unpacked_items : Int
-  total_bin_area : Int
-  used_area : Int
+  total_items : Int32
+  packed_items : Int32
+  unpacked_items : Int32
+  total_bin_area : Int32
+  used_area : Int32
   occupancy : Double
-  bins_used : Int
+  bins_used : Int32
 } derive(Eq, Debug, Default)
 
 ///|
 pub fn PackingStats::compute(
-  total_items : Int,
+  total_items : Int32,
   packed : Array[Rect],
   unpacked : Array[Size],
-  bins_used : Int,
-  bin_area : Int
+  bins_used : Int32,
+  bin_area : Int32,
 ) -> PackingStats {
   let mut used_area = 0
   for r in packed {

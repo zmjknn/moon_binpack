@@ -1,3 +1,4 @@
+///|
 test "rect_area_and_boundaries" {
   let r = @moon_binpack.Rect::new(10, 20, 30, 40)
   assert_eq(r.x, 10)
@@ -10,6 +11,7 @@ test "rect_area_and_boundaries" {
   assert_eq(r.perimeter(), 140)
 }
 
+///|
 test "rect_containment" {
   let outer = @moon_binpack.Rect::new(0, 0, 100, 100)
   let inner = @moon_binpack.Rect::new(10, 10, 50, 50)
@@ -22,6 +24,7 @@ test "rect_containment" {
   assert_false(outer.contains(outside))
 }
 
+///|
 test "rect_intersection" {
   let r1 = @moon_binpack.Rect::new(0, 0, 20, 20)
   let r2 = @moon_binpack.Rect::new(10, 10, 20, 20)
@@ -46,6 +49,7 @@ test "rect_intersection" {
   assert_eq(r1.intersection(r3), None)
 }
 
+///|
 test "size_and_bin" {
   let s = @moon_binpack.Size::new(64, 128)
   assert_eq(s.area(), 8192)

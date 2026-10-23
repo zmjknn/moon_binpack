@@ -1,30 +1,28 @@
 ///|
 /// 2D bin packer based on the Maximal Rectangles (MaxRects) algorithm.
 pub struct MaxRectsPacker {
-  bin_width : Int
-  bin_height : Int
+  bin_width : Int32
+  bin_height : Int32
   free_rectangles : Array[Rect]
   used_rectangles : Array[Rect]
 } derive(Debug)
 
 ///|
-pub fn MaxRectsPacker::new(bin_width : Int, bin_height : Int) -> MaxRectsPacker {
+pub fn MaxRectsPacker::new(
+  bin_width : Int32,
+  bin_height : Int32,
+) -> MaxRectsPacker {
   let free = [Rect::new(0, 0, bin_width, bin_height)]
-  {
-    bin_width,
-    bin_height,
-    free_rectangles: free,
-    used_rectangles: [],
-  }
+  { bin_width, bin_height, free_rectangles: free, used_rectangles: [], }
 }
 
 ///|
-pub fn MaxRectsPacker::bin_width(self : MaxRectsPacker) -> Int {
+pub fn MaxRectsPacker::bin_width(self : MaxRectsPacker) -> Int32 {
   self.bin_width
 }
 
 ///|
-pub fn MaxRectsPacker::bin_height(self : MaxRectsPacker) -> Int {
+pub fn MaxRectsPacker::bin_height(self : MaxRectsPacker) -> Int32 {
   self.bin_height
 }
 
@@ -51,19 +49,21 @@ pub fn MaxRectsPacker::occupancy(self : MaxRectsPacker) -> Double {
 /// Inserts a rectangle with dimensions (width, height) using the specified heuristic.
 pub fn MaxRectsPacker::insert(
   self : MaxRectsPacker,
-  width : Int,
-  height : Int,
-  id~ : Int = 0,
+  width : Int32,
+  height : Int32,
+  id~ : Int32 = 0,
   heuristic~ : MaxRectsHeuristic = MaxRectsHeuristic::BestShortSideFit,
-  allow_rotation~ : Bool = true
+  allow_rotation~ : Bool = true,
 ) -> Rect? {
   if width <= 0 || height <= 0 {
     return None
   }
 
   let (best_node, best_score1, best_score2) = match heuristic {
-    BestShortSideFit => self.find_best_short_side_fit(width, height, allow_rotation)
-    BestLongSideFit => self.find_best_long_side_fit(width, height, allow_rotation)
+    BestShortSideFit =>
+      self.find_best_short_side_fit(width, height, allow_rotation)
+    BestLongSideFit =>
+      self.find_best_long_side_fit(width, height, allow_rotation)
     BestAreaFit => self.find_best_area_fit(width, height, allow_rotation)
     BottomLeftRule => self.find_bottom_left(width, height, allow_rotation)
     ContactPointRule => self.find_contact_point(width, height, allow_rotation)
@@ -95,10 +95,10 @@ pub fn MaxRectsPacker::insert(
 ///|
 fn MaxRectsPacker::find_best_short_side_fit(
   self : MaxRectsPacker,
-  width : Int,
-  height : Int,
-  allow_rotation : Bool
-) -> (Rect, Int, Int) {
+  width : Int32,
+  height : Int32,
+  allow_rotation : Bool,
+) -> (Rect, Int32, Int32) {
   let mut best_node = Rect::new(0, 0, 0, 0)
   let mut best_short_side = 2147483647
   let mut best_long_side = 2147483647
@@ -111,7 +111,8 @@ fn MaxRectsPacker::find_best_short_side_fit(
       let short_side = if rem_x < rem_y { rem_x } else { rem_y }
       let long_side = if rem_x > rem_y { rem_x } else { rem_y }
 
-      if short_side < best_short_side || (short_side == best_short_side && long_side < best_long_side) {
+      if short_side < best_short_side ||
+        (short_side == best_short_side && long_side < best_long_side) {
         best_node = Rect::new(f.x, f.y, width, height, rotated=false)
         best_short_side = short_side
         best_long_side = long_side
@@ -125,7 +126,8 @@ fn MaxRectsPacker::find_best_short_side_fit(
       let short_side = if rem_x < rem_y { rem_x } else { rem_y }
       let long_side = if rem_x > rem_y { rem_x } else { rem_y }
 
-      if short_side < best_short_side || (short_side == best_short_side && long_side < best_long_side) {
+      if short_side < best_short_side ||
+        (short_side == best_short_side && long_side < best_long_side) {
         best_node = Rect::new(f.x, f.y, height, width, rotated=true)
         best_short_side = short_side
         best_long_side = long_side
@@ -139,10 +141,10 @@ fn MaxRectsPacker::find_best_short_side_fit(
 ///|
 fn MaxRectsPacker::find_best_long_side_fit(
   self : MaxRectsPacker,
-  width : Int,
-  height : Int,
-  allow_rotation : Bool
-) -> (Rect, Int, Int) {
+  width : Int32,
+  height : Int32,
+  allow_rotation : Bool,
+) -> (Rect, Int32, Int32) {
   let mut best_node = Rect::new(0, 0, 0, 0)
   let mut best_short_side = 2147483647
   let mut best_long_side = 2147483647
@@ -155,7 +157,8 @@ fn MaxRectsPacker::find_best_long_side_fit(
       let short_side = if rem_x < rem_y { rem_x } else { rem_y }
       let long_side = if rem_x > rem_y { rem_x } else { rem_y }
 
-      if long_side < best_long_side || (long_side == best_long_side && short_side < best_short_side) {
+      if long_side < best_long_side ||
+        (long_side == best_long_side && short_side < best_short_side) {
         best_node = Rect::new(f.x, f.y, width, height, rotated=false)
         best_short_side = short_side
         best_long_side = long_side
@@ -169,7 +172,8 @@ fn MaxRectsPacker::find_best_long_side_fit(
       let short_side = if rem_x < rem_y { rem_x } else { rem_y }
       let long_side = if rem_x > rem_y { rem_x } else { rem_y }
 
-      if long_side < best_long_side || (long_side == best_long_side && short_side < best_short_side) {
+      if long_side < best_long_side ||
+        (long_side == best_long_side && short_side < best_short_side) {
         best_node = Rect::new(f.x, f.y, height, width, rotated=true)
         best_short_side = short_side
         best_long_side = long_side
@@ -183,10 +187,10 @@ fn MaxRectsPacker::find_best_long_side_fit(
 ///|
 fn MaxRectsPacker::find_best_area_fit(
   self : MaxRectsPacker,
-  width : Int,
-  height : Int,
-  allow_rotation : Bool
-) -> (Rect, Int, Int) {
+  width : Int32,
+  height : Int32,
+  allow_rotation : Bool,
+) -> (Rect, Int32, Int32) {
   let mut best_node = Rect::new(0, 0, 0, 0)
   let mut best_area_fit = 2147483647
   let mut best_short_side = 2147483647
@@ -200,7 +204,8 @@ fn MaxRectsPacker::find_best_area_fit(
       let rem_y = f.height - height
       let short_side = if rem_x < rem_y { rem_x } else { rem_y }
 
-      if area_fit < best_area_fit || (area_fit == best_area_fit && short_side < best_short_side) {
+      if area_fit < best_area_fit ||
+        (area_fit == best_area_fit && short_side < best_short_side) {
         best_node = Rect::new(f.x, f.y, width, height, rotated=false)
         best_area_fit = area_fit
         best_short_side = short_side
@@ -213,7 +218,8 @@ fn MaxRectsPacker::find_best_area_fit(
       let rem_y = f.height - width
       let short_side = if rem_x < rem_y { rem_x } else { rem_y }
 
-      if area_fit < best_area_fit || (area_fit == best_area_fit && short_side < best_short_side) {
+      if area_fit < best_area_fit ||
+        (area_fit == best_area_fit && short_side < best_short_side) {
         best_node = Rect::new(f.x, f.y, height, width, rotated=true)
         best_area_fit = area_fit
         best_short_side = short_side
@@ -227,10 +233,10 @@ fn MaxRectsPacker::find_best_area_fit(
 ///|
 fn MaxRectsPacker::find_bottom_left(
   self : MaxRectsPacker,
-  width : Int,
-  height : Int,
-  allow_rotation : Bool
-) -> (Rect, Int, Int) {
+  width : Int32,
+  height : Int32,
+  allow_rotation : Bool,
+) -> (Rect, Int32, Int32) {
   let mut best_node = Rect::new(0, 0, 0, 0)
   let mut best_y = 2147483647
   let mut best_x = 2147483647
@@ -263,10 +269,10 @@ fn MaxRectsPacker::find_bottom_left(
 ///|
 fn MaxRectsPacker::find_contact_point(
   self : MaxRectsPacker,
-  width : Int,
-  height : Int,
-  allow_rotation : Bool
-) -> (Rect, Int, Int) {
+  width : Int32,
+  height : Int32,
+  allow_rotation : Bool,
+) -> (Rect, Int32, Int32) {
   let mut best_node = Rect::new(0, 0, 0, 0)
   let mut best_contact = -1
 
@@ -292,7 +298,13 @@ fn MaxRectsPacker::find_contact_point(
 }
 
 ///|
-fn MaxRectsPacker::contact_point_score(self : MaxRectsPacker, x : Int, y : Int, w : Int, h : Int) -> Int {
+fn MaxRectsPacker::contact_point_score(
+  self : MaxRectsPacker,
+  x : Int32,
+  y : Int32,
+  w : Int32,
+  h : Int32,
+) -> Int32 {
   let mut score = 0
   if x == 0 || x + w == self.bin_width {
     score = score + h
@@ -302,12 +314,12 @@ fn MaxRectsPacker::contact_point_score(self : MaxRectsPacker, x : Int, y : Int, 
   }
 
   for u in self.used_rectangles {
-    if (u.x == x + w || u.right() == x) && (u.y < y + h && u.bottom() > y) {
+    if (u.x == x + w || u.right() == x) && u.y < y + h && u.bottom() > y {
       let overlap_y1 = if u.y > y { u.y } else { y }
       let overlap_y2 = if u.bottom() < y + h { u.bottom() } else { y + h }
       score = score + (overlap_y2 - overlap_y1)
     }
-    if (u.y == y + h || u.bottom() == y) && (u.x < x + w && u.right() > x) {
+    if (u.y == y + h || u.bottom() == y) && u.x < x + w && u.right() > x {
       let overlap_x1 = if u.x > x { u.x } else { x }
       let overlap_x2 = if u.right() < x + w { u.right() } else { x + w }
       score = score + (overlap_x2 - overlap_x1)
@@ -318,7 +330,10 @@ fn MaxRectsPacker::contact_point_score(self : MaxRectsPacker, x : Int, y : Int, 
 }
 
 ///|
-fn MaxRectsPacker::split_free_rectangles(self : MaxRectsPacker, placed : Rect) -> Unit {
+fn MaxRectsPacker::split_free_rectangles(
+  self : MaxRectsPacker,
+  placed : Rect,
+) -> Unit {
   let new_free = []
   let mut i = 0
 
@@ -331,7 +346,9 @@ fn MaxRectsPacker::split_free_rectangles(self : MaxRectsPacker, placed : Rect) -
       }
       // Bottom slice
       if placed.bottom() < f.bottom() {
-        new_free.push(Rect::new(f.x, placed.bottom(), f.width, f.bottom() - placed.bottom()))
+        new_free.push(
+          Rect::new(f.x, placed.bottom(), f.width, f.bottom() - placed.bottom()),
+        )
       }
       // Left slice
       if placed.x > f.x && placed.x < f.right() {
@@ -339,7 +356,9 @@ fn MaxRectsPacker::split_free_rectangles(self : MaxRectsPacker, placed : Rect) -
       }
       // Right slice
       if placed.right() < f.right() {
-        new_free.push(Rect::new(placed.right(), f.y, f.right() - placed.right(), f.height))
+        new_free.push(
+          Rect::new(placed.right(), f.y, f.right() - placed.right(), f.height),
+        )
       }
 
       let _ = self.free_rectangles.remove(i)
@@ -389,7 +408,7 @@ pub fn MaxRectsPacker::insert_batch(
   self : MaxRectsPacker,
   sizes : Array[Size],
   heuristic~ : MaxRectsHeuristic = MaxRectsHeuristic::BestShortSideFit,
-  allow_rotation~ : Bool = true
+  allow_rotation~ : Bool = true,
 ) -> (Array[Rect], Array[Size]) {
   // Copy and sort by area descending
   let indexed = []
@@ -413,7 +432,8 @@ pub fn MaxRectsPacker::insert_batch(
 
   for item in indexed {
     let (sz, orig_id) = item
-    match self.insert(sz.width, sz.height, id=orig_id, heuristic~, allow_rotation~) {
+    match
+      self.insert(sz.width, sz.height, id=orig_id, heuristic~, allow_rotation~) {
       Some(r) => packed.push(r)
       None => unpacked.push(sz)
     }

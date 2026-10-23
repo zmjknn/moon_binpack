@@ -29,7 +29,15 @@ fn main {
     @lib.Size::new(16, 16),
   ]
 
-  println("Packing " + items.length().to_string() + " items into " + bin_w.to_string() + "x" + bin_h.to_string() + " atlas...")
+  println(
+    "Packing " +
+    items.length().to_string() +
+    " items into " +
+    bin_w.to_string() +
+    "x" +
+    bin_h.to_string() +
+    " atlas...",
+  )
 
   let (packed, unpacked) = packer.insert_batch(
     items,
@@ -40,7 +48,12 @@ fn main {
   let occupancy_pct = (packer.occupancy() * 1000.0).to_int().to_double() / 10.0
 
   println("Result:")
-  println("  - Packed items:   " + packed.length().to_string() + " / " + items.length().to_string())
+  println(
+    "  - Packed items:   " +
+    packed.length().to_string() +
+    " / " +
+    items.length().to_string(),
+  )
   println("  - Unpacked items: " + unpacked.length().to_string())
   println("  - Occupancy:      " + occupancy_pct.to_string() + "%")
   println("")
@@ -49,13 +62,31 @@ fn main {
   println("  ---------------------------------")
   for r in packed {
     let rot_str = if r.rotated { "Yes" } else { "No" }
-    println("  #" + r.id.to_string() + "   " + r.x.to_string() + "   " + r.y.to_string() + "   " + r.width.to_string() + "   " + r.height.to_string() + "   " + rot_str)
+    println(
+      "  #" +
+      r.id.to_string() +
+      "   " +
+      r.x.to_string() +
+      "   " +
+      r.y.to_string() +
+      "   " +
+      r.width.to_string() +
+      "   " +
+      r.height.to_string() +
+      "   " +
+      rot_str,
+    )
   }
 
   println("")
   let svg = @lib.to_svg(bin_w, bin_h, packed, title="moon_binpack Demo Atlas")
   let css = @lib.to_css(packed, class_prefix="sprite")
-  let html = @lib.to_html(bin_w, bin_h, packed, title="moon_binpack Interactive Report")
+  let html = @lib.to_html(
+    bin_w,
+    bin_h,
+    packed,
+    title="moon_binpack Interactive Report",
+  )
   println("Generated Exporters:")
   println("  - SVG Preview:    " + svg.length().to_string() + " bytes")
   println("  - CSS Sprites:    " + css.length().to_string() + " bytes")
@@ -63,7 +94,11 @@ fn main {
 
   println("")
   println("Running Heuristic Arena (best_pack)...")
-  let (best_res, winning_algo) = @lib.best_pack(items, max_width=512, max_height=512)
+  let (best_res, winning_algo) = @lib.best_pack(
+    items,
+    max_width=512,
+    max_height=512,
+  )
   let best_pct = (best_res.stats.occupancy * 1000.0).to_int().to_double() / 10.0
   println("  - Winning Heuristic: " + winning_algo)
   println("  - Pages:             " + best_res.pages.length().to_string())
@@ -86,16 +121,35 @@ fn main {
   if baked_pages.length() > 0 {
     let p0 = baked_pages[0]
     let bmp = p0.image.to_bmp()
-    println("  - Baked Atlas Dimensions: " + p0.image.width().to_string() + "x" + p0.image.height().to_string() + " px")
+    println(
+      "  - Baked Atlas Dimensions: " +
+      p0.image.width().to_string() +
+      "x" +
+      p0.image.height().to_string() +
+      " px",
+    )
     println("  - Extruded Bleeding Margin: 1 px duplicate border")
-    println("  - Generated Windows Bitmap: " + bmp.length().to_string() + " bytes (32-bit uncompressed BMP)")
+    println(
+      "  - Generated Windows Bitmap: " +
+      bmp.length().to_string() +
+      " bytes (32-bit uncompressed BMP)",
+    )
     if p0.uv_frames.length() > 0 {
       let uv = p0.uv_frames[0]
-      println("  - Frame #1 Shader Half-Texel UV: [" + uv.u_min.to_string() + ", " + uv.v_min.to_string() + "] -> [" + uv.u_max.to_string() + ", " + uv.v_max.to_string() + "]")
+      println(
+        "  - Frame #1 Shader Half-Texel UV: [" +
+        uv.u_min.to_string() +
+        ", " +
+        uv.v_min.to_string() +
+        "] -> [" +
+        uv.u_max.to_string() +
+        ", " +
+        uv.v_max.to_string() +
+        "]",
+      )
     }
   }
 
   println("")
   println("Done successfully!")
 }
-

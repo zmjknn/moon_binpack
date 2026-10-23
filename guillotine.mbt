@@ -1,30 +1,28 @@
 ///|
 /// 2D bin packer based on the Guillotine cut algorithm.
 pub struct GuillotinePacker {
-  bin_width : Int
-  bin_height : Int
+  bin_width : Int32
+  bin_height : Int32
   free_rectangles : Array[Rect]
-  mut used_surface_area : Int
+  mut used_surface_area : Int32
 } derive(Debug)
 
 ///|
-pub fn GuillotinePacker::new(bin_width : Int, bin_height : Int) -> GuillotinePacker {
+pub fn GuillotinePacker::new(
+  bin_width : Int32,
+  bin_height : Int32,
+) -> GuillotinePacker {
   let free = [Rect::new(0, 0, bin_width, bin_height)]
-  {
-    bin_width,
-    bin_height,
-    free_rectangles: free,
-    used_surface_area: 0,
-  }
+  { bin_width, bin_height, free_rectangles: free, used_surface_area: 0, }
 }
 
 ///|
-pub fn GuillotinePacker::bin_width(self : GuillotinePacker) -> Int {
+pub fn GuillotinePacker::bin_width(self : GuillotinePacker) -> Int32 {
   self.bin_width
 }
 
 ///|
-pub fn GuillotinePacker::bin_height(self : GuillotinePacker) -> Int {
+pub fn GuillotinePacker::bin_height(self : GuillotinePacker) -> Int32 {
   self.bin_height
 }
 
@@ -42,18 +40,20 @@ pub fn GuillotinePacker::occupancy(self : GuillotinePacker) -> Double {
 /// Attempts to insert a rectangle of dimensions (width, height).
 pub fn GuillotinePacker::insert(
   self : GuillotinePacker,
-  width : Int,
-  height : Int,
-  id~ : Int = 0,
+  width : Int32,
+  height : Int32,
+  id~ : Int32 = 0,
   merge~ : Bool = true,
   rect_choice~ : GuillotineHeuristic = GuillotineHeuristic::BestShortSideFit,
-  split_method~ : SplitHeuristic = SplitHeuristic::ShorterLeftoverAxis
+  split_method~ : SplitHeuristic = SplitHeuristic::ShorterLeftoverAxis,
 ) -> Rect? {
   if width <= 0 || height <= 0 {
     return None
   }
 
-  let (best_index, rotated) = self.find_best_free_rect(width, height, rect_choice)
+  let (best_index, rotated) = self.find_best_free_rect(
+    width, height, rect_choice,
+  )
   if best_index == -1 {
     return None
   }
@@ -88,10 +88,10 @@ pub fn GuillotinePacker::insert(
 ///|
 fn GuillotinePacker::find_best_free_rect(
   self : GuillotinePacker,
-  width : Int,
-  height : Int,
-  heuristic : GuillotineHeuristic
-) -> (Int, Bool) {
+  width : Int32,
+  height : Int32,
+  heuristic : GuillotineHeuristic,
+) -> (Int32, Bool) {
   let mut best_index = -1
   let mut best_rotated = false
   let mut best_score1 = 2147483647
@@ -113,15 +113,19 @@ fn GuillotinePacker::find_best_free_rect(
 
     // Normal orientation
     if width <= f.width && height <= f.height {
-      let (score1, score2) = self.score_by_heuristic(f, width, height, heuristic)
+      let (score1, score2) = self.score_by_heuristic(
+        f, width, height, heuristic,
+      )
       if is_worst {
-        if score1 > best_score1 || (score1 == best_score1 && score2 > best_score2) {
+        if score1 > best_score1 ||
+          (score1 == best_score1 && score2 > best_score2) {
           best_score1 = score1
           best_score2 = score2
           best_index = i
           best_rotated = false
         }
-      } else if score1 < best_score1 || (score1 == best_score1 && score2 < best_score2) {
+      } else if score1 < best_score1 ||
+        (score1 == best_score1 && score2 < best_score2) {
         best_score1 = score1
         best_score2 = score2
         best_index = i
@@ -131,15 +135,19 @@ fn GuillotinePacker::find_best_free_rect(
 
     // Rotated orientation
     if height <= f.width && width <= f.height {
-      let (score1, score2) = self.score_by_heuristic(f, height, width, heuristic)
+      let (score1, score2) = self.score_by_heuristic(
+        f, height, width, heuristic,
+      )
       if is_worst {
-        if score1 > best_score1 || (score1 == best_score1 && score2 > best_score2) {
+        if score1 > best_score1 ||
+          (score1 == best_score1 && score2 > best_score2) {
           best_score1 = score1
           best_score2 = score2
           best_index = i
           best_rotated = true
         }
-      } else if score1 < best_score1 || (score1 == best_score1 && score2 < best_score2) {
+      } else if score1 < best_score1 ||
+        (score1 == best_score1 && score2 < best_score2) {
         best_score1 = score1
         best_score2 = score2
         best_index = i
@@ -155,10 +163,10 @@ fn GuillotinePacker::find_best_free_rect(
 fn GuillotinePacker::score_by_heuristic(
   self : GuillotinePacker,
   f : Rect,
-  w : Int,
-  h : Int,
-  heuristic : GuillotineHeuristic
-) -> (Int, Int) {
+  w : Int32,
+  h : Int32,
+  heuristic : GuillotineHeuristic,
+) -> (Int32, Int32) {
   let _ = self
   let rem_w = f.width - w
   let rem_h = f.height - h
@@ -177,7 +185,7 @@ fn GuillotinePacker::split_free_rect(
   self : GuillotinePacker,
   free : Rect,
   placed : Rect,
-  heuristic : SplitHeuristic
+  heuristic : SplitHeuristic,
 ) -> Unit {
   let w = placed.width
   let h = placed.height
@@ -228,7 +236,9 @@ pub fn GuillotinePacker::merge_free_rectangles(self : GuillotinePacker) -> Unit 
       let b = self.free_rectangles[j]
 
       // Same horizontal span, perfectly aligned vertically
-      if a.x == b.x && a.width == b.width && (a.y + a.height == b.y || b.y + b.height == a.y) {
+      if a.x == b.x &&
+        a.width == b.width &&
+        (a.y + a.height == b.y || b.y + b.height == a.y) {
         let min_y = if a.y < b.y { a.y } else { b.y }
         let total_h = a.height + b.height
         self.free_rectangles[i] = Rect::new(a.x, min_y, a.width, total_h)
@@ -238,7 +248,9 @@ pub fn GuillotinePacker::merge_free_rectangles(self : GuillotinePacker) -> Unit 
       }
 
       // Same vertical span, perfectly aligned horizontally
-      if a.y == b.y && a.height == b.height && (a.x + a.width == b.x || b.x + b.width == a.x) {
+      if a.y == b.y &&
+        a.height == b.height &&
+        (a.x + a.width == b.x || b.x + b.width == a.x) {
         let min_x = if a.x < b.x { a.x } else { b.x }
         let total_w = a.width + b.width
         self.free_rectangles[i] = Rect::new(min_x, a.y, total_w, a.height)

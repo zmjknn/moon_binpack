@@ -1,3 +1,4 @@
+///|
 test "maxrects_basic_packing" {
   let packer = @moon_binpack.MaxRectsPacker::new(100, 100)
 
@@ -25,6 +26,7 @@ test "maxrects_basic_packing" {
   assert_eq(packer.occupancy(), 1.0)
 }
 
+///|
 test "maxrects_rotation" {
   // Bin is 100x50. A 20x90 item won't fit unless rotated to 90x20
   let packer = @moon_binpack.MaxRectsPacker::new(100, 50)
@@ -45,6 +47,7 @@ test "maxrects_rotation" {
   assert_eq(r_fail, None)
 }
 
+///|
 test "maxrects_heuristics" {
   let heuristics = [
     @moon_binpack.MaxRectsHeuristic::BestShortSideFit,

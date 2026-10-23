@@ -1,10 +1,10 @@
 ///|
 /// Configuration options for AtlasPacker.
 pub(all) struct AtlasOptions {
-  max_width : Int
-  max_height : Int
-  padding : Int
-  border_padding : Int
+  max_width : Int32
+  max_height : Int32
+  padding : Int32
+  border_padding : Int32
   allow_rotation : Bool
   auto_grow_pot : Bool
   heuristic : MaxRectsHeuristic
@@ -40,20 +40,20 @@ pub struct AtlasPacker {
 } derive(Debug)
 
 ///|
-pub fn AtlasPacker::new(options~ : AtlasOptions = AtlasOptions::default()) -> AtlasPacker {
+pub fn AtlasPacker::new(
+  options~ : AtlasOptions = AtlasOptions::default(),
+) -> AtlasPacker {
   { options, }
 }
 
 ///|
 /// Packs an array of item sizes into one or more bins according to configured options.
-pub fn AtlasPacker::pack(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
+pub fn AtlasPacker::pack(
+  self : AtlasPacker,
+  items : Array[Size],
+) -> AtlasResult {
   if items.length() == 0 {
-    return {
-      pages: [],
-      rects: [],
-      unpacked: [],
-      stats: Default::default(),
-    }
+    return { pages: [], rects: [], unpacked: [], stats: Default::default(), }
   }
 
   if self.options.auto_grow_pot {
@@ -64,7 +64,10 @@ pub fn AtlasPacker::pack(self : AtlasPacker, items : Array[Size]) -> AtlasResult
 }
 
 ///|
-fn AtlasPacker::pack_auto_grow(self : AtlasPacker, items : Array[Size]) -> AtlasResult {
+fn AtlasPacker::pack_auto_grow(
+  self : AtlasPacker,
+  items : Array[Size],
+) -> AtlasResult {
   // Candidate power of two dimensions
   let pot_sizes = [64, 128, 256, 512, 1024, 2048, 4096]
 
@@ -86,20 +89,15 @@ fn AtlasPacker::pack_auto_grow(self : AtlasPacker, items : Array[Size]) -> Atlas
 fn AtlasPacker::pack_fixed_bins(
   self : AtlasPacker,
   items : Array[Size],
-  bin_w : Int,
-  bin_h : Int,
-  single_page_only~ : Bool = false
+  bin_w : Int32,
+  bin_h : Int32,
+  single_page_only~ : Bool = false,
 ) -> AtlasResult {
   let effective_w = bin_w - self.options.border_padding * 2
   let effective_h = bin_h - self.options.border_padding * 2
 
   if effective_w <= 0 || effective_h <= 0 {
-    return {
-      pages: [],
-      rects: [],
-      unpacked: items,
-      stats: Default::default(),
-    }
+    return { pages: [], rects: [], unpacked: items, stats: Default::default(), }
   }
 
   // Prepare remaining items with original index
@@ -177,7 +175,7 @@ fn AtlasPacker::pack_fixed_bins(
         pages.length(),
         bin_w * bin_h,
       )
-      return { pages, rects: packed_rects, unpacked, stats }
+      return { pages, rects: packed_rects, unpacked, stats, }
     }
 
     remaining.clear()
@@ -196,7 +194,7 @@ fn AtlasPacker::pack_fixed_bins(
     bin_w * bin_h,
   )
 
-  { pages, rects: packed_rects, unpacked: empty_unpacked, stats }
+  { pages, rects: packed_rects, unpacked: empty_unpacked, stats, }
 }
 
 ///|
@@ -204,21 +202,21 @@ fn AtlasPacker::pack_fixed_bins(
 pub fn AtlasPacker::pack_skyline(
   self : AtlasPacker,
   items : Array[Size],
-  heuristic~ : SkylineHeuristic = SkylineHeuristic::BottomLeft
+  heuristic~ : SkylineHeuristic = SkylineHeuristic::BottomLeft,
 ) -> AtlasResult {
   if items.length() == 0 {
-    return {
-      pages: [],
-      rects: [],
-      unpacked: [],
-      stats: Default::default(),
-    }
+    return { pages: [], rects: [], unpacked: [], stats: Default::default(), }
   }
 
   if self.options.auto_grow_pot {
     self.pack_skyline_auto_grow(items, heuristic~)
   } else {
-    self.pack_skyline_fixed_bins(items, self.options.max_width, self.options.max_height, heuristic~)
+    self.pack_skyline_fixed_bins(
+      items,
+      self.options.max_width,
+      self.options.max_height,
+      heuristic~,
+    )
   }
 }
 
@@ -226,41 +224,47 @@ pub fn AtlasPacker::pack_skyline(
 fn AtlasPacker::pack_skyline_auto_grow(
   self : AtlasPacker,
   items : Array[Size],
-  heuristic~ : SkylineHeuristic
+  heuristic~ : SkylineHeuristic,
 ) -> AtlasResult {
   let pot_sizes = [64, 128, 256, 512, 1024, 2048, 4096]
 
   for dim in pot_sizes {
     if dim <= self.options.max_width && dim <= self.options.max_height {
-      let res = self.pack_skyline_fixed_bins(items, dim, dim, heuristic~, single_page_only=true)
+      let res = self.pack_skyline_fixed_bins(
+        items,
+        dim,
+        dim,
+        heuristic~,
+        single_page_only=true,
+      )
       if res.unpacked.length() == 0 {
         return res
       }
     }
   }
 
-  self.pack_skyline_fixed_bins(items, self.options.max_width, self.options.max_height, heuristic~)
+  self.pack_skyline_fixed_bins(
+    items,
+    self.options.max_width,
+    self.options.max_height,
+    heuristic~,
+  )
 }
 
 ///|
 fn AtlasPacker::pack_skyline_fixed_bins(
   self : AtlasPacker,
   items : Array[Size],
-  bin_w : Int,
-  bin_h : Int,
+  bin_w : Int32,
+  bin_h : Int32,
   heuristic~ : SkylineHeuristic,
-  single_page_only~ : Bool = false
+  single_page_only~ : Bool = false,
 ) -> AtlasResult {
   let effective_w = bin_w - self.options.border_padding * 2
   let effective_h = bin_h - self.options.border_padding * 2
 
   if effective_w <= 0 || effective_h <= 0 {
-    return {
-      pages: [],
-      rects: [],
-      unpacked: items,
-      stats: Default::default(),
-    }
+    return { pages: [], rects: [], unpacked: items, stats: Default::default(), }
   }
 
   let remaining = []
@@ -335,7 +339,7 @@ fn AtlasPacker::pack_skyline_fixed_bins(
         pages.length(),
         bin_w * bin_h,
       )
-      return { pages, rects: packed_rects, unpacked, stats }
+      return { pages, rects: packed_rects, unpacked, stats, }
     }
 
     remaining.clear()
@@ -354,7 +358,7 @@ fn AtlasPacker::pack_skyline_fixed_bins(
     bin_w * bin_h,
   )
 
-  { pages, rects: packed_rects, unpacked: empty_unpacked, stats }
+  { pages, rects: packed_rects, unpacked: empty_unpacked, stats, }
 }
 
 ///|
@@ -379,8 +383,16 @@ fn is_better_result(cand : AtlasResult, best : AtlasResult) -> Bool {
     return false
   }
 
-  let area_c = if cand.pages.length() > 0 { cand.pages[0].area() * cand.pages.length() } else { 0 }
-  let area_b = if best.pages.length() > 0 { best.pages[0].area() * best.pages.length() } else { 0 }
+  let area_c = if cand.pages.length() > 0 {
+    cand.pages[0].area() * cand.pages.length()
+  } else {
+    0
+  }
+  let area_b = if best.pages.length() > 0 {
+    best.pages[0].area() * best.pages.length()
+  } else {
+    0
+  }
   if area_c < area_b {
     return true
   }
@@ -397,12 +409,12 @@ fn is_better_result(cand : AtlasResult, best : AtlasResult) -> Bool {
 /// Returns the winning `AtlasResult` and the name of the winning algorithm.
 pub fn best_pack(
   items : Array[Size],
-  max_width~ : Int = 2048,
-  max_height~ : Int = 2048,
-  padding~ : Int = 2,
-  border_padding~ : Int = 2,
+  max_width~ : Int32 = 2048,
+  max_height~ : Int32 = 2048,
+  padding~ : Int32 = 2,
+  border_padding~ : Int32 = 2,
   allow_rotation~ : Bool = true,
-  auto_grow_pot~ : Bool = true
+  auto_grow_pot~ : Bool = true,
 ) -> (AtlasResult, String) {
   if items.length() == 0 {
     let empty_res : AtlasResult = {
@@ -450,12 +462,11 @@ pub fn best_pack(
         best_result = Some(res)
         best_name = name
       }
-      Some(cur_best) => {
+      Some(cur_best) =>
         if is_better_result(res, cur_best) {
           best_result = Some(res)
           best_name = name
         }
-      }
     }
   }
 
@@ -480,12 +491,11 @@ pub fn best_pack(
         best_result = Some(res)
         best_name = name
       }
-      Some(cur_best) => {
+      Some(cur_best) =>
         if is_better_result(res, cur_best) {
           best_result = Some(res)
           best_name = name
         }
-      }
     }
   }
 
@@ -502,4 +512,3 @@ pub fn best_pack(
     }
   }
 }
-
