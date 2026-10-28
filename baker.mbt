@@ -313,6 +313,157 @@ pub fn PixelBuffer::to_bmp_bytes(self : PixelBuffer) -> Bytes {
 }
 
 ///|
+/// Encodes the pixel buffer into a standard uncompressed 32-bit Truevision TGA file byte array.
+/// Widely used in 2D/3D game engines (OpenGL, Vulkan, DirectX) as an uncompressed raw asset format.
+pub fn PixelBuffer::to_tga(self : PixelBuffer) -> FixedArray[Byte] {
+  let header_size = 18
+  let image_size = self.width * self.height * 4
+  let file_size = header_size + image_size
+  let out = FixedArray::make(file_size, b'\x00')
+
+  // TGA Header (18 bytes)
+  out[2] = b'\x02' // Uncompressed true-color image
+  // Width (little endian)
+  out[12] = (self.width & 0xFF).to_byte()
+  out[13] = ((self.width >> 8) & 0xFF).to_byte()
+  // Height (little endian)
+  out[14] = (self.height & 0xFF).to_byte()
+  out[15] = ((self.height >> 8) & 0xFF).to_byte()
+  // Pixel depth: 32 bits (8 bits per BGRA channel)
+  out[16] = b'\x20'
+  // Image descriptor: 0x28 (bit 5: top-to-bottom row order, bit 3: 8-bit alpha)
+  out[17] = b'\x28'
+
+  // Pixel Data: BGRA (Blue, Green, Red, Alpha)
+  let total_pixels = self.width * self.height
+  for i = 0; i < total_pixels; i = i + 1 {
+    let src_off = i * 4
+    let dst_off = header_size + i * 4
+    let r = self.pixels[src_off]
+    let g = self.pixels[src_off + 1]
+    let b = self.pixels[src_off + 2]
+    let a = self.pixels[src_off + 3]
+    out[dst_off] = b
+    out[dst_off + 1] = g
+    out[dst_off + 2] = r
+    out[dst_off + 3] = a
+  }
+
+  out
+}
+
+///|
+/// Converts the pixel buffer into an immutable `Bytes` object containing standard TGA file data.
+pub fn PixelBuffer::to_tga_bytes(self : PixelBuffer) -> Bytes {
+  let arr = self.to_tga()
+  let list = []
+  for b in arr {
+    list.push(b)
+  }
+  Bytes::from_array(list)
+}
+
+///|
+/// Resets the pixel buffer by filling all pixels with `color`.
+pub fn PixelBuffer::clear(
+  self : PixelBuffer,
+  color~ : Rgba = Rgba::transparent(),
+) -> Unit {
+  self.fill(color)
+}
+
+///|
+/// Draws a rectangle outline or filled rectangle on the canvas.
+pub fn PixelBuffer::draw_rect(
+  self : PixelBuffer,
+  x : Int32,
+  y : Int32,
+  width : Int32,
+  height : Int32,
+  color : Rgba,
+  fill~ : Bool = false,
+) -> Unit {
+  if width <= 0 || height <= 0 {
+    return
+  }
+  if fill {
+    for cy = y; cy < y + height; cy = cy + 1 {
+      for cx = x; cx < x + width; cx = cx + 1 {
+        self.set_pixel(cx, cy, color)
+      }
+    }
+  } else {
+    // Top and bottom borders
+    for cx = x; cx < x + width; cx = cx + 1 {
+      self.set_pixel(cx, y, color)
+      self.set_pixel(cx, y + height - 1, color)
+    }
+    // Left and right borders
+    for cy = y; cy < y + height; cy = cy + 1 {
+      self.set_pixel(x, cy, color)
+      self.set_pixel(x + width - 1, cy, color)
+    }
+  }
+}
+
+///|
+/// Performs standard alpha blending (Porter-Duff Over) of `color` onto pixel at `(x, y)`.
+pub fn PixelBuffer::blend_pixel(
+  self : PixelBuffer,
+  x : Int32,
+  y : Int32,
+  color : Rgba,
+) -> Unit {
+  if x < 0 || x >= self.width || y < 0 || y >= self.height {
+    return
+  }
+  let src_a = color.a.to_int()
+  if src_a == 0 {
+    return
+  }
+  if src_a == 255 {
+    self.set_pixel(x, y, color)
+    return
+  }
+
+  let dst = self.get_pixel(x, y)
+  let dst_a = dst.a.to_int()
+
+  // out_a = src_a + dst_a * (255 - src_a) / 255
+  let inv_src_a = 255 - src_a
+  let out_a = src_a + dst_a * inv_src_a / 255
+
+  if out_a == 0 {
+    self.set_pixel(x, y, Rgba::transparent())
+    return
+  }
+
+  let out_r = (
+      color.r.to_int() * src_a + dst.r.to_int() * dst_a * inv_src_a / 255
+    ) /
+    out_a
+  let out_g = (
+      color.g.to_int() * src_a + dst.g.to_int() * dst_a * inv_src_a / 255
+    ) /
+    out_a
+  let out_b = (
+      color.b.to_int() * src_a + dst.b.to_int() * dst_a * inv_src_a / 255
+    ) /
+    out_a
+
+  self.set_pixel(
+    x,
+    y,
+    Rgba::new(
+      out_r.to_byte(),
+      out_g.to_byte(),
+      out_b.to_byte(),
+      a=out_a.to_byte(),
+    ),
+  )
+}
+
+///|
 /// Sub-image item to be packed and baked into a master atlas.
 pub(all) struct ImageItem {
   id : Int32
@@ -350,29 +501,12 @@ pub fn AtlasBaker::new(
 }
 
 ///|
-/// Bakes an array of image items into one or more pixel buffer atlas pages,
-/// automatically performing:
-/// 1. Geometric packing via AtlasPacker
-/// 2. Pixel copying (blitting) with rotation support
-/// 3. Physical 1-pixel edge color extrusion to eliminate GPU sampling bleeding
-/// 4. Half-texel UV coordinate calculation for GPU shaders
-pub fn AtlasBaker::bake(
+/// Internal helper to render an `AtlasResult` onto baked pixel buffer pages.
+fn AtlasBaker::render_atlas_result(
   self : AtlasBaker,
   items : Array[ImageItem],
+  result : AtlasResult,
 ) -> Array[BakedAtlas] {
-  if items.length() == 0 {
-    return []
-  }
-
-  // Extract sizes
-  let sizes = []
-  for item in items {
-    sizes.push(Size::new(item.image.width, item.image.height))
-  }
-
-  let packer = AtlasPacker::new(options=self.options)
-  let result = packer.pack(sizes)
-
   let baked_pages = []
 
   for p_idx = 0; p_idx < result.pages.length(); p_idx = p_idx + 1 {
@@ -421,4 +555,61 @@ pub fn AtlasBaker::bake(
   }
 
   baked_pages
+}
+
+///|
+/// Bakes an array of image items into one or more pixel buffer atlas pages,
+/// automatically performing:
+/// 1. Geometric packing via AtlasPacker
+/// 2. Pixel copying (blitting) with rotation support
+/// 3. Physical 1-pixel edge color extrusion to eliminate GPU sampling bleeding
+/// 4. Half-texel UV coordinate calculation for GPU shaders
+pub fn AtlasBaker::bake(
+  self : AtlasBaker,
+  items : Array[ImageItem],
+) -> Array[BakedAtlas] {
+  if items.length() == 0 {
+    return []
+  }
+
+  // Extract sizes
+  let sizes = []
+  for item in items {
+    sizes.push(Size::new(item.image.width, item.image.height))
+  }
+
+  let packer = AtlasPacker::new(options=self.options)
+  let result = packer.pack(sizes)
+  self.render_atlas_result(items, result)
+}
+
+///|
+/// Automatically benchmarks all 18 heuristics via `best_pack` and bakes image items
+/// into the most space-efficient atlas page layout.
+/// Returns the array of baked pages and the winning algorithm name.
+pub fn AtlasBaker::bake_best(
+  self : AtlasBaker,
+  items : Array[ImageItem],
+) -> (Array[BakedAtlas], String) {
+  if items.length() == 0 {
+    return ([], "None")
+  }
+
+  let sizes = []
+  for item in items {
+    sizes.push(Size::new(item.image.width, item.image.height))
+  }
+
+  let (best_res, winning_name) = best_pack(
+    sizes,
+    max_width=self.options.max_width,
+    max_height=self.options.max_height,
+    padding=self.options.padding,
+    border_padding=self.options.border_padding,
+    allow_rotation=self.options.allow_rotation,
+    auto_grow_pot=self.options.auto_grow_pot,
+  )
+
+  let baked_pages = self.render_atlas_result(items, best_res)
+  (baked_pages, winning_name)
 }
