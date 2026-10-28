@@ -15,8 +15,11 @@ keywords = [
   "maxrects",
   "skyline",
   "guillotine",
+  "shelf",
   "css-sprite",
   "layout",
+  "game-dev",
+  "sprite-sheet",
 ]
 
 preferred_target = "wasm"
