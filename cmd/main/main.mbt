@@ -87,22 +87,28 @@ fn main {
     packed,
     title="moon_binpack Interactive Report",
   )
+  let csv = @lib.to_csv(packed)
+  let pixi = @lib.to_pixi_json(bin_w, bin_h, packed, image_name="atlas.png")
+
   println("Generated Exporters:")
-  println("  - SVG Preview:    " + svg.length().to_string() + " bytes")
-  println("  - CSS Sprites:    " + css.length().to_string() + " bytes")
-  println("  - HTML Report:    " + html.length().to_string() + " bytes")
+  println("  - SVG Preview:        " + svg.length().to_string() + " bytes")
+  println("  - CSS Sprites:        " + css.length().to_string() + " bytes")
+  println("  - HTML Report:        " + html.length().to_string() + " bytes")
+  println("  - CSV Layout Data:    " + csv.length().to_string() + " bytes")
+  println("  - Pixi.js / Phaser:   " + pixi.length().to_string() + " bytes")
 
   println("")
-  println("Running Heuristic Arena (best_pack)...")
+  println("Running 18-Heuristic Arena (best_pack across 4 algorithms)...")
   let (best_res, winning_algo) = @lib.best_pack(
     items,
     max_width=512,
     max_height=512,
   )
   let best_pct = (best_res.stats.occupancy * 1000.0).to_int().to_double() / 10.0
-  println("  - Winning Heuristic: " + winning_algo)
-  println("  - Pages:             " + best_res.pages.length().to_string())
-  println("  - Occupancy:         " + best_pct.to_string() + "%")
+  println("  - Winning Heuristic:  " + winning_algo)
+  println("  - Allocated Pages:    " + best_res.pages.length().to_string())
+  println("  - Packed Items:       " + best_res.rects.length().to_string())
+  println("  - Final Occupancy:    " + best_pct.to_string() + "%")
 
   println("")
   println("Demonstrating Extruded Pixel Texture Baker (Layer 2)...")
@@ -117,10 +123,12 @@ fn main {
   ]
 
   let baker = @lib.AtlasBaker::new(extrude_margin=1)
-  let baked_pages = baker.bake(baker_items)
+  let (baked_pages, baker_winner) = baker.bake_best(baker_items)
   if baked_pages.length() > 0 {
     let p0 = baked_pages[0]
     let bmp = p0.image.to_bmp()
+    let tga = p0.image.to_tga()
+    println("  - Arena Winning Backend:  " + baker_winner)
     println(
       "  - Baked Atlas Dimensions: " +
       p0.image.width().to_string() +
@@ -130,14 +138,26 @@ fn main {
     )
     println("  - Extruded Bleeding Margin: 1 px duplicate border")
     println(
-      "  - Generated Windows Bitmap: " +
+      "  - Windows Bitmap (.bmp):   " +
       bmp.length().to_string() +
       " bytes (32-bit uncompressed BMP)",
     )
+    println(
+      "  - Truevision TGA (.tga):   " +
+      tga.length().to_string() +
+      " bytes (32-bit uncompressed TGA)",
+    )
     if p0.uv_frames.length() > 0 {
       let uv = p0.uv_frames[0]
+      let frame0 = p0.frames[0]
+      let uv_gl = frame0.to_uv_ex(
+        p0.image.width(),
+        p0.image.height(),
+        half_texel_inset=true,
+        flip_v=true,
+      )
       println(
-        "  - Frame #1 Shader Half-Texel UV: [" +
+        "  - Direct3D/WebGPU UV Inset: [" +
         uv.u_min.to_string() +
         ", " +
         uv.v_min.to_string() +
@@ -145,6 +165,17 @@ fn main {
         uv.u_max.to_string() +
         ", " +
         uv.v_max.to_string() +
+        "]",
+      )
+      println(
+        "  - WebGL/OpenGL Flipped UV:  [" +
+        uv_gl.u_min.to_string() +
+        ", " +
+        uv_gl.v_min.to_string() +
+        "] -> [" +
+        uv_gl.u_max.to_string() +
+        ", " +
+        uv_gl.v_max.to_string() +
         "]",
       )
     }
