@@ -144,3 +144,172 @@ test "best_pack_multi_item_benchmark" {
     }
   }
 }
+
+///|
+test "game_ui_sprites_benchmark_all_algorithms" {
+  let items = @moon_binpack.game_ui_sprites()
+  let bin_w = 1024
+  let bin_h = 1024
+
+  // 1. MaxRects
+  let maxrects = @moon_binpack.MaxRectsPacker::new(bin_w, bin_h)
+  let (p_mr, u_mr) = maxrects.insert_batch(items, allow_rotation=true)
+  assert_eq(u_mr.length(), 0)
+  assert_eq(p_mr.length(), items.length())
+  assert_true(maxrects.occupancy() > 0.15)
+
+  // Non-overlapping invariant for MaxRects
+  for i = 0; i < p_mr.length(); i = i + 1 {
+    for j = i + 1; j < p_mr.length(); j = j + 1 {
+      assert_false(p_mr[i].intersects(p_mr[j]))
+    }
+  }
+
+  // 2. Skyline
+  let skyline = @moon_binpack.SkylinePacker::new(bin_w, bin_h)
+  let (p_sky, u_sky) = skyline.insert_batch(items, allow_rotation=true)
+  assert_eq(u_sky.length(), 0)
+  assert_eq(p_sky.length(), items.length())
+  assert_true(skyline.occupancy() > 0.15)
+
+  for i = 0; i < p_sky.length(); i = i + 1 {
+    for j = i + 1; j < p_sky.length(); j = j + 1 {
+      assert_false(p_sky[i].intersects(p_sky[j]))
+    }
+  }
+
+  // 3. Guillotine
+  let guillotine = @moon_binpack.GuillotinePacker::new(bin_w, bin_h)
+  let (p_gui, u_gui) = guillotine.insert_batch(items, merge=true)
+  assert_eq(u_gui.length(), 0)
+  assert_eq(p_gui.length(), items.length())
+  assert_true(guillotine.occupancy() > 0.15)
+
+  for i = 0; i < p_gui.length(); i = i + 1 {
+    for j = i + 1; j < p_gui.length(); j = j + 1 {
+      assert_false(p_gui[i].intersects(p_gui[j]))
+    }
+  }
+
+  // 4. Shelf
+  let shelf = @moon_binpack.ShelfPacker::new(bin_w, bin_h)
+  let (p_sh, u_sh) = shelf.insert_batch(items)
+  assert_eq(u_sh.length(), 0)
+  assert_eq(p_sh.length(), items.length())
+  assert_true(shelf.occupancy() > 0.15)
+
+  for i = 0; i < p_sh.length(); i = i + 1 {
+    for j = i + 1; j < p_sh.length(); j = j + 1 {
+      assert_false(p_sh[i].intersects(p_sh[j]))
+    }
+  }
+}
+
+///|
+test "font_glyph_cache_benchmark" {
+  let glyphs = @moon_binpack.font_glyph_cache()
+  let bin_w = 512
+  let bin_h = 512
+
+  // Shelf packer is purpose-built for font glyph caches
+  let shelf = @moon_binpack.ShelfPacker::new(bin_w, bin_h)
+  let (packed, unpacked) = shelf.insert_batch(
+    glyphs,
+    heuristic=@moon_binpack.ShelfHeuristic::BestAreaFit,
+  )
+  assert_eq(unpacked.length(), 0)
+  assert_eq(packed.length(), glyphs.length())
+
+  // Verify containment & non-overlapping
+  for i = 0; i < packed.length(); i = i + 1 {
+    let r1 = packed[i]
+    assert_true(r1.x >= 0 && r1.y >= 0)
+    assert_true(r1.right() <= bin_w && r1.bottom() <= bin_h)
+
+    for j = i + 1; j < packed.length(); j = j + 1 {
+      let r2 = packed[j]
+      assert_false(r1.intersects(r2))
+    }
+  }
+
+  // Best pack arena on font glyphs
+  let (best_res, winning_name) = @moon_binpack.best_pack(
+    glyphs,
+    max_width=512,
+    max_height=512,
+  )
+  assert_eq(best_res.unpacked.length(), 0)
+  assert_eq(best_res.rects.length(), glyphs.length())
+  assert_true(winning_name.length() > 0)
+}
+
+///|
+test "pathological_aspect_ratios_benchmark" {
+  let extreme_items = @moon_binpack.pathological_aspect_ratios()
+
+  let (best_res, winning_name) = @moon_binpack.best_pack(
+    extreme_items,
+    max_width=1024,
+    max_height=1024,
+    allow_rotation=true,
+  )
+
+  // Must successfully pack needle-like items
+  assert_eq(best_res.unpacked.length(), 0)
+  assert_eq(best_res.rects.length(), extreme_items.length())
+  assert_true(winning_name.length() > 0)
+
+  // Invariant verification
+  for i = 0; i < best_res.rects.length(); i = i + 1 {
+    let r1 = best_res.rects[i]
+    assert_true(r1.x >= 0 && r1.y >= 0)
+
+    for j = i + 1; j < best_res.rects.length(); j = j + 1 {
+      let r2 = best_res.rects[j]
+      if r1.bin_index == r2.bin_index {
+        assert_false(r1.intersects(r2))
+      }
+    }
+  }
+}
+
+///|
+test "large_scale_160_sprites_multi_bin_benchmark" {
+  let all_items = @moon_binpack.large_scale_sprites()
+
+  let options = @moon_binpack.AtlasOptions::{
+    max_width: 512,
+    max_height: 512,
+    padding: 2,
+    border_padding: 2,
+    allow_rotation: true,
+    auto_grow_pot: true,
+    heuristic: @moon_binpack.MaxRectsHeuristic::BestShortSideFit,
+  }
+
+  let atlas = @moon_binpack.AtlasPacker::new(options~)
+  let res = atlas.pack(all_items)
+
+  // Verify that all items are accounted for
+  assert_eq(res.rects.length() + res.unpacked.length(), all_items.length())
+  assert_true(res.pages.length() >= 1)
+
+  // Verify non-overlapping across every bin page
+  for i = 0; i < res.rects.length(); i = i + 1 {
+    let r1 = res.rects[i]
+    let page_bin = res.pages[r1.bin_index]
+
+    // Boundary check within page
+    assert_true(r1.x >= 0)
+    assert_true(r1.y >= 0)
+    assert_true(r1.right() <= page_bin.width)
+    assert_true(r1.bottom() <= page_bin.height)
+
+    for j = i + 1; j < res.rects.length(); j = j + 1 {
+      let r2 = res.rects[j]
+      if r1.bin_index == r2.bin_index {
+        assert_false(r1.intersects(r2))
+      }
+    }
+  }
+}
