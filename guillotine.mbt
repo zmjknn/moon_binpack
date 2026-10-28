@@ -4,6 +4,7 @@ pub struct GuillotinePacker {
   bin_width : Int32
   bin_height : Int32
   free_rectangles : Array[Rect]
+  used_rectangles : Array[Rect]
   mut used_surface_area : Int32
 } derive(Debug)
 
@@ -13,7 +14,13 @@ pub fn GuillotinePacker::new(
   bin_height : Int32,
 ) -> GuillotinePacker {
   let free = [Rect::new(0, 0, bin_width, bin_height)]
-  { bin_width, bin_height, free_rectangles: free, used_surface_area: 0, }
+  {
+    bin_width,
+    bin_height,
+    free_rectangles: free,
+    used_rectangles: [],
+    used_surface_area: 0,
+  }
 }
 
 ///|
@@ -24,6 +31,13 @@ pub fn GuillotinePacker::bin_width(self : GuillotinePacker) -> Int32 {
 ///|
 pub fn GuillotinePacker::bin_height(self : GuillotinePacker) -> Int32 {
   self.bin_height
+}
+
+///|
+pub fn GuillotinePacker::used_rectangles(
+  self : GuillotinePacker,
+) -> Array[Rect] {
+  self.used_rectangles
 }
 
 ///|
@@ -82,7 +96,54 @@ pub fn GuillotinePacker::insert(
   }
 
   self.used_surface_area = self.used_surface_area + width * height
+  self.used_rectangles.push(placed)
   Some(placed)
+}
+
+///|
+/// Packs an array of sizes into the bin with pre-sorting by area descending.
+pub fn GuillotinePacker::insert_batch(
+  self : GuillotinePacker,
+  sizes : Array[Size],
+  merge~ : Bool = true,
+  rect_choice~ : GuillotineHeuristic = GuillotineHeuristic::BestShortSideFit,
+  split_method~ : SplitHeuristic = SplitHeuristic::ShorterLeftoverAxis,
+) -> (Array[Rect], Array[Size]) {
+  let indexed = []
+  for i = 0; i < sizes.length(); i = i + 1 {
+    indexed.push((sizes[i], i))
+  }
+
+  for i = 1; i < indexed.length(); i = i + 1 {
+    let key = indexed[i]
+    let mut j = i - 1
+    while j >= 0 && indexed[j].0.area() < key.0.area() {
+      indexed[j + 1] = indexed[j]
+      j = j - 1
+    }
+    indexed[j + 1] = key
+  }
+
+  let packed = []
+  let unpacked = []
+
+  for item in indexed {
+    let (sz, orig_id) = item
+    match
+      self.insert(
+        sz.width,
+        sz.height,
+        id=orig_id,
+        merge~,
+        rect_choice~,
+        split_method~,
+      ) {
+      Some(r) => packed.push(r)
+      None => unpacked.push(sz)
+    }
+  }
+
+  (packed, unpacked)
 }
 
 ///|

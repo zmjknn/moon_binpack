@@ -12,13 +12,21 @@ pub struct ShelfPacker {
   bin_width : Int32
   bin_height : Int32
   shelves : Array[Shelf]
+  used_rectangles : Array[Rect]
   mut current_y : Int32
   mut used_surface_area : Int32
 } derive(Debug)
 
 ///|
 pub fn ShelfPacker::new(bin_width : Int32, bin_height : Int32) -> ShelfPacker {
-  { bin_width, bin_height, shelves: [], current_y: 0, used_surface_area: 0, }
+  {
+    bin_width,
+    bin_height,
+    shelves: [],
+    used_rectangles: [],
+    current_y: 0,
+    used_surface_area: 0,
+  }
 }
 
 ///|
@@ -29,6 +37,11 @@ pub fn ShelfPacker::bin_width(self : ShelfPacker) -> Int32 {
 ///|
 pub fn ShelfPacker::bin_height(self : ShelfPacker) -> Int32 {
   self.bin_height
+}
+
+///|
+pub fn ShelfPacker::used_rectangles(self : ShelfPacker) -> Array[Rect] {
+  self.used_rectangles
 }
 
 ///|
@@ -57,13 +70,56 @@ pub fn ShelfPacker::insert(
     return None
   }
 
-  match heuristic {
+  let res = match heuristic {
     NextFit => self.insert_next_fit(width, height, id)
     FirstFit => self.insert_first_fit(width, height, id)
     BestAreaFit => self.insert_best_area_fit(width, height, id)
     BestHeightFit => self.insert_best_height_fit(width, height, id)
     WorstAreaFit => self.insert_worst_area_fit(width, height, id)
   }
+  match res {
+    Some(r) => {
+      self.used_rectangles.push(r)
+      Some(r)
+    }
+    None => None
+  }
+}
+
+///|
+/// Packs an array of sizes into the bin using the Shelf algorithm with pre-sorting by height descending.
+pub fn ShelfPacker::insert_batch(
+  self : ShelfPacker,
+  sizes : Array[Size],
+  heuristic~ : ShelfHeuristic = ShelfHeuristic::BestAreaFit,
+) -> (Array[Rect], Array[Size]) {
+  let indexed = []
+  for i = 0; i < sizes.length(); i = i + 1 {
+    indexed.push((sizes[i], i))
+  }
+
+  for i = 1; i < indexed.length(); i = i + 1 {
+    let key = indexed[i]
+    let mut j = i - 1
+    while j >= 0 && indexed[j].0.height < key.0.height {
+      indexed[j + 1] = indexed[j]
+      j = j - 1
+    }
+    indexed[j + 1] = key
+  }
+
+  let packed = []
+  let unpacked = []
+
+  for item in indexed {
+    let (sz, orig_id) = item
+    match self.insert(sz.width, sz.height, id=orig_id, heuristic~) {
+      Some(r) => packed.push(r)
+      None => unpacked.push(sz)
+    }
+  }
+
+  (packed, unpacked)
 }
 
 ///|
