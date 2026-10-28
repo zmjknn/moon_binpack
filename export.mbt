@@ -230,6 +230,102 @@ pub fn to_css(
 }
 
 ///|
+/// Exports packed rectangles into standard CSV format for CAD, CNC, and spreadsheet analysis.
+pub fn to_csv(rects : Array[Rect]) -> String {
+  let buf = StringBuilder()
+  buf.write_string("id,x,y,width,height,rotated,bin,area\n")
+  for r in rects {
+    buf.write_string(r.id.to_string())
+    buf.write_string(",")
+    buf.write_string(r.x.to_string())
+    buf.write_string(",")
+    buf.write_string(r.y.to_string())
+    buf.write_string(",")
+    buf.write_string(r.width.to_string())
+    buf.write_string(",")
+    buf.write_string(r.height.to_string())
+    buf.write_string(",")
+    buf.write_string(if r.rotated { "true" } else { "false" })
+    buf.write_string(",")
+    buf.write_string(r.bin_index.to_string())
+    buf.write_string(",")
+    buf.write_string(r.area().to_string())
+    buf.write_string("\n")
+  }
+  buf.to_string()
+}
+
+///|
+/// Exports packed rectangles into TexturePacker / Pixi.js / Phaser JSON Hash format.
+pub fn to_pixi_json(
+  bin_width : Int32,
+  bin_height : Int32,
+  rects : Array[Rect],
+  image_name~ : String = "atlas.png",
+) -> String {
+  let buf = StringBuilder()
+  buf.write_string("{\n")
+  buf.write_string("  \"frames\": {\n")
+
+  for i = 0; i < rects.length(); i = i + 1 {
+    let r = rects[i]
+    let orig_w = if r.rotated { r.height } else { r.width }
+    let orig_h = if r.rotated { r.width } else { r.height }
+
+    buf.write_string("    \"frame_")
+    buf.write_string(r.id.to_string())
+    buf.write_string("\": {\n")
+    buf.write_string("      \"frame\": {\"x\": ")
+    buf.write_string(r.x.to_string())
+    buf.write_string(", \"y\": ")
+    buf.write_string(r.y.to_string())
+    buf.write_string(", \"w\": ")
+    buf.write_string(r.width.to_string())
+    buf.write_string(", \"h\": ")
+    buf.write_string(r.height.to_string())
+    buf.write_string("},\n")
+    buf.write_string("      \"rotated\": ")
+    buf.write_string(if r.rotated { "true" } else { "false" })
+    buf.write_string(",\n")
+    buf.write_string("      \"trimmed\": false,\n")
+    buf.write_string("      \"spriteSourceSize\": {\"x\": 0, \"y\": 0, \"w\": ")
+    buf.write_string(orig_w.to_string())
+    buf.write_string(", \"h\": ")
+    buf.write_string(orig_h.to_string())
+    buf.write_string("},\n")
+    buf.write_string("      \"sourceSize\": {\"w\": ")
+    buf.write_string(orig_w.to_string())
+    buf.write_string(", \"h\": ")
+    buf.write_string(orig_h.to_string())
+    buf.write_string("}\n")
+    buf.write_string("    }")
+    if i + 1 < rects.length() {
+      buf.write_string(",")
+    }
+    buf.write_string("\n")
+  }
+
+  buf.write_string("  },\n")
+  buf.write_string("  \"meta\": {\n")
+  buf.write_string("    \"app\": \"moon_binpack\",\n")
+  buf.write_string("    \"version\": \"0.1.0\",\n")
+  buf.write_string("    \"image\": \"")
+  buf.write_string(image_name)
+  buf.write_string("\",\n")
+  buf.write_string("    \"format\": \"RGBA8888\",\n")
+  buf.write_string("    \"size\": {\"w\": ")
+  buf.write_string(bin_width.to_string())
+  buf.write_string(", \"h\": ")
+  buf.write_string(bin_height.to_string())
+  buf.write_string("},\n")
+  buf.write_string("    \"scale\": \"1\"\n")
+  buf.write_string("  }\n")
+  buf.write_string("}\n")
+
+  buf.to_string()
+}
+
+///|
 /// Exports packed rectangles into a standalone, interactive HTML visual inspection report.
 pub fn to_html(
   bin_width : Int32,
