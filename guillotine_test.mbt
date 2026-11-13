@@ -61,3 +61,26 @@ test "guillotine_heuristics_and_rotation" {
     _ => panic()
   }
 }
+
+///|
+test "guillotine_allow_rotation_flag_strictness" {
+  // Bin is 100x50. Item is 20x90.
+  // Without rotation, height (90) exceeds bin height (50), so it CANNOT fit!
+  let packer_no_rot = @moon_binpack.GuillotinePacker::new(100, 50)
+  let res_no_rot = packer_no_rot.insert(20, 90, id=1, allow_rotation=false)
+  assert_true(res_no_rot is None)
+  assert_eq(packer_no_rot.used_rectangles().length(), 0)
+
+  // With rotation enabled, it rotates to 90x20 and fits!
+  let packer_rot = @moon_binpack.GuillotinePacker::new(100, 50)
+  let res_rot = packer_rot.insert(20, 90, id=1, allow_rotation=true)
+  assert_true(res_rot is Some(_))
+  match res_rot {
+    Some(placed) => {
+      assert_true(placed.rotated)
+      assert_eq(placed.width, 90)
+      assert_eq(placed.height, 20)
+    }
+    None => panic()
+  }
+}

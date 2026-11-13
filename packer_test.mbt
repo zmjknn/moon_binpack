@@ -141,3 +141,77 @@ test "best_pack_empty" {
   assert_eq(res.rects.length(), 0)
   assert_eq(algo_name, "None")
 }
+
+///|
+test "regression_best_pack_strictly_forbids_rotation_when_disabled" {
+  let items = [
+    @moon_binpack.Size::new(120, 30),
+    @moon_binpack.Size::new(30, 110),
+    @moon_binpack.Size::new(90, 40),
+    @moon_binpack.Size::new(40, 85),
+    @moon_binpack.Size::new(100, 25),
+  ]
+
+  // Test across multiple runs with allow_rotation = false
+  let (res, _algo_name) = @moon_binpack.best_pack(
+    items,
+    max_width=256,
+    max_height=256,
+    allow_rotation=false,
+  )
+
+  // Critical Invariant: NOT A SINGLE rectangle may have rotated == true!
+  for r in res.rects {
+    assert_false(r.rotated)
+  }
+
+  // Also test AtlasPacker pack_guillotine directly with allow_rotation = false
+  let opts = @moon_binpack.AtlasOptions::{
+    max_width: 256,
+    max_height: 256,
+    padding: 2,
+    border_padding: 2,
+    allow_rotation: false,
+    auto_grow_pot: true,
+    heuristic: @moon_binpack.MaxRectsHeuristic::BestShortSideFit,
+  }
+  let packer = @moon_binpack.AtlasPacker::new(options=opts)
+  let g_res = packer.pack_guillotine(items)
+  for r in g_res.rects {
+    assert_false(r.rotated)
+  }
+}
+
+///|
+test "regression_atlas_packer_custom_ids_preservation" {
+  let items = [
+    @moon_binpack.Size::new(30, 30),
+    @moon_binpack.Size::new(40, 20),
+    @moon_binpack.Size::new(25, 35),
+  ]
+  let ids = [42, 108, 999]
+
+  let (res, _) = @moon_binpack.best_pack(
+    items,
+    ids~,
+    max_width=256,
+    max_height=256,
+  )
+
+  assert_eq(res.rects.length(), 3)
+  let mut found_42 = false
+  let mut found_108 = false
+  let mut found_999 = false
+  for r in res.rects {
+    if r.id == 42 {
+      found_42 = true
+    } else if r.id == 108 {
+      found_108 = true
+    } else if r.id == 999 {
+      found_999 = true
+    }
+  }
+  assert_true(found_42)
+  assert_true(found_108)
+  assert_true(found_999)
+}

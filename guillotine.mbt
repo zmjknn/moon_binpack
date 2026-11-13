@@ -1,12 +1,13 @@
 ///|
 /// 2D bin packer based on the Guillotine cut algorithm.
+#derive(Debug)
 pub struct GuillotinePacker {
   bin_width : Int32
   bin_height : Int32
   free_rectangles : Array[Rect]
   used_rectangles : Array[Rect]
   mut used_surface_area : Int32
-} derive(Debug)
+}
 
 ///|
 pub fn GuillotinePacker::new(
@@ -60,13 +61,17 @@ pub fn GuillotinePacker::insert(
   merge~ : Bool = true,
   rect_choice~ : GuillotineHeuristic = GuillotineHeuristic::BestShortSideFit,
   split_method~ : SplitHeuristic = SplitHeuristic::ShorterLeftoverAxis,
+  allow_rotation~ : Bool = true,
 ) -> Rect? {
   if width <= 0 || height <= 0 {
     return None
   }
 
   let (best_index, rotated) = self.find_best_free_rect(
-    width, height, rect_choice,
+    width,
+    height,
+    rect_choice,
+    allow_rotation~,
   )
   if best_index == -1 {
     return None
@@ -108,6 +113,7 @@ pub fn GuillotinePacker::insert_batch(
   merge~ : Bool = true,
   rect_choice~ : GuillotineHeuristic = GuillotineHeuristic::BestShortSideFit,
   split_method~ : SplitHeuristic = SplitHeuristic::ShorterLeftoverAxis,
+  allow_rotation~ : Bool = true,
 ) -> (Array[Rect], Array[Size]) {
   let indexed = []
   for i = 0; i < sizes.length(); i = i + 1 {
@@ -137,6 +143,7 @@ pub fn GuillotinePacker::insert_batch(
         merge~,
         rect_choice~,
         split_method~,
+        allow_rotation~,
       ) {
       Some(r) => packed.push(r)
       None => unpacked.push(sz)
@@ -152,6 +159,7 @@ fn GuillotinePacker::find_best_free_rect(
   width : Int32,
   height : Int32,
   heuristic : GuillotineHeuristic,
+  allow_rotation~ : Bool = true,
 ) -> (Int32, Bool) {
   let mut best_index = -1
   let mut best_rotated = false
@@ -195,7 +203,10 @@ fn GuillotinePacker::find_best_free_rect(
     }
 
     // Rotated orientation
-    if height <= f.width && width <= f.height {
+    if allow_rotation &&
+      width != height &&
+      height <= f.width &&
+      width <= f.height {
       let (score1, score2) = self.score_by_heuristic(
         f, height, width, heuristic,
       )
