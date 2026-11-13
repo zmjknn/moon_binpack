@@ -1,11 +1,12 @@
 ///|
 /// A 32-bit RGBA color representation (8 bits per channel).
+#derive(Eq, Debug, Default)
 pub(all) struct Rgba {
   r : Byte
   g : Byte
   b : Byte
   a : Byte
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn Rgba::new(r : Byte, g : Byte, b : Byte, a~ : Byte = b'\xFF') -> Rgba {
@@ -28,11 +29,12 @@ pub fn Rgba::from_hex(hex : Int32) -> Rgba {
 
 ///|
 /// A 2D RGBA bitmap image buffer stored in row-major order.
+#derive(Debug)
 pub struct PixelBuffer {
   width : Int32
   height : Int32
   pixels : FixedArray[Byte]
-} derive(Debug)
+}
 
 ///|
 pub fn PixelBuffer::new(
@@ -465,10 +467,11 @@ pub fn PixelBuffer::blend_pixel(
 
 ///|
 /// Sub-image item to be packed and baked into a master atlas.
+#derive(Debug)
 pub(all) struct ImageItem {
   id : Int32
   image : PixelBuffer
-} derive(Debug)
+}
 
 ///|
 pub fn ImageItem::new(id : Int32, image : PixelBuffer) -> ImageItem {
@@ -477,20 +480,22 @@ pub fn ImageItem::new(id : Int32, image : PixelBuffer) -> ImageItem {
 
 ///|
 /// Result of baking multiple sub-images into an atlas page.
+#derive(Debug)
 pub(all) struct BakedAtlas {
   page_index : Int32
   image : PixelBuffer
   frames : Array[Rect]
   uv_frames : Array[UvRect]
-} derive(Debug)
+}
 
 ///|
 /// High-level 2D Texture Atlas Baker that packs sub-images into pixel buffers
 /// and applies physical 1-pixel edge extrusion to completely eliminate GPU sampling bleeding.
+#derive(Debug)
 pub struct AtlasBaker {
   options : AtlasOptions
   extrude_margin : Int32
-} derive(Debug)
+}
 
 ///|
 pub fn AtlasBaker::new(
@@ -533,6 +538,10 @@ fn AtlasBaker::render_atlas_result(
             break
           }
         }
+        // Fallback: if not found by id, attempt index lookup
+        if found_src is None && r.id >= 0 && r.id < items.length() {
+          found_src = Some(items[r.id].image)
+        }
 
         match found_src {
           Some(src) => {
@@ -560,7 +569,7 @@ fn AtlasBaker::render_atlas_result(
 ///|
 /// Bakes an array of image items into one or more pixel buffer atlas pages,
 /// automatically performing:
-/// 1. Geometric packing via AtlasPacker
+/// 1. Geometric packing via AtlasPacker preserving exact ImageItem IDs
 /// 2. Pixel copying (blitting) with rotation support
 /// 3. Physical 1-pixel edge color extrusion to eliminate GPU sampling bleeding
 /// 4. Half-texel UV coordinate calculation for GPU shaders
@@ -572,20 +581,22 @@ pub fn AtlasBaker::bake(
     return []
   }
 
-  // Extract sizes
+  // Extract sizes and IDs
   let sizes = []
+  let ids = []
   for item in items {
     sizes.push(Size::new(item.image.width, item.image.height))
+    ids.push(item.id)
   }
 
   let packer = AtlasPacker::new(options=self.options)
-  let result = packer.pack(sizes)
+  let result = packer.pack(sizes, ids~)
   self.render_atlas_result(items, result)
 }
 
 ///|
 /// Automatically benchmarks all 18 heuristics via `best_pack` and bakes image items
-/// into the most space-efficient atlas page layout.
+/// into the most space-efficient atlas page layout, preserving ImageItem IDs.
 /// Returns the array of baked pages and the winning algorithm name.
 pub fn AtlasBaker::bake_best(
   self : AtlasBaker,
@@ -596,12 +607,15 @@ pub fn AtlasBaker::bake_best(
   }
 
   let sizes = []
+  let ids = []
   for item in items {
     sizes.push(Size::new(item.image.width, item.image.height))
+    ids.push(item.id)
   }
 
   let (best_res, winning_name) = best_pack(
     sizes,
+    ids~,
     max_width=self.options.max_width,
     max_height=self.options.max_height,
     padding=self.options.padding,

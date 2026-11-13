@@ -1,5 +1,6 @@
 ///|
 /// Configuration options for AtlasPacker.
+#derive(Eq, Debug)
 pub(all) struct AtlasOptions {
   max_width : Int32
   max_height : Int32
@@ -8,7 +9,7 @@ pub(all) struct AtlasOptions {
   allow_rotation : Bool
   auto_grow_pot : Bool
   heuristic : MaxRectsHeuristic
-} derive(Eq, Debug)
+}
 
 ///|
 pub fn AtlasOptions::default() -> AtlasOptions {
@@ -25,19 +26,21 @@ pub fn AtlasOptions::default() -> AtlasOptions {
 
 ///|
 /// Result of multi-bin atlas packing.
+#derive(Eq, Debug)
 pub(all) struct AtlasResult {
   pages : Array[Bin]
   rects : Array[Rect]
   unpacked : Array[Size]
   stats : PackingStats
-} derive(Eq, Debug)
+}
 
 ///|
 /// High-level 2D texture atlas packer supporting padding, rotation,
 /// multi-bin overflow, and adaptive power-of-two growth.
+#derive(Debug)
 pub struct AtlasPacker {
   options : AtlasOptions
-} derive(Debug)
+}
 
 ///|
 pub fn AtlasPacker::new(
@@ -48,18 +51,25 @@ pub fn AtlasPacker::new(
 
 ///|
 /// Packs an array of item sizes into one or more bins according to configured options.
+/// Accepts optional `ids` array to preserve custom item identifiers (e.g., ImageItem IDs).
 pub fn AtlasPacker::pack(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
 ) -> AtlasResult {
   if items.length() == 0 {
     return { pages: [], rects: [], unpacked: [], stats: Default::default(), }
   }
 
   if self.options.auto_grow_pot {
-    self.pack_auto_grow(items)
+    self.pack_auto_grow(items, ids~)
   } else {
-    self.pack_fixed_bins(items, self.options.max_width, self.options.max_height)
+    self.pack_fixed_bins(
+      items,
+      self.options.max_width,
+      self.options.max_height,
+      ids~,
+    )
   }
 }
 
@@ -67,6 +77,7 @@ pub fn AtlasPacker::pack(
 fn AtlasPacker::pack_auto_grow(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
 ) -> AtlasResult {
   // Candidate power of two dimensions
   let pot_sizes = [64, 128, 256, 512, 1024, 2048, 4096]
@@ -74,7 +85,13 @@ fn AtlasPacker::pack_auto_grow(
   // Try to find the smallest single POT bin that fits all items
   for dim in pot_sizes {
     if dim <= self.options.max_width && dim <= self.options.max_height {
-      let res = self.pack_fixed_bins(items, dim, dim, single_page_only=true)
+      let res = self.pack_fixed_bins(
+        items,
+        dim,
+        dim,
+        ids~,
+        single_page_only=true,
+      )
       if res.unpacked.length() == 0 {
         return res
       }
@@ -82,7 +99,12 @@ fn AtlasPacker::pack_auto_grow(
   }
 
   // If cannot fit in single POT bin, fall back to multi-bin packing at max_width/max_height
-  self.pack_fixed_bins(items, self.options.max_width, self.options.max_height)
+  self.pack_fixed_bins(
+    items,
+    self.options.max_width,
+    self.options.max_height,
+    ids~,
+  )
 }
 
 ///|
@@ -91,6 +113,7 @@ fn AtlasPacker::pack_fixed_bins(
   items : Array[Size],
   bin_w : Int32,
   bin_h : Int32,
+  ids~ : Array[Int32] = [],
   single_page_only~ : Bool = false,
 ) -> AtlasResult {
   let effective_w = bin_w - self.options.border_padding * 2
@@ -100,10 +123,12 @@ fn AtlasPacker::pack_fixed_bins(
     return { pages: [], rects: [], unpacked: items, stats: Default::default(), }
   }
 
-  // Prepare remaining items with original index
+  // Prepare remaining items with original index or custom ids
   let remaining = []
+  let has_custom_ids = ids.length() == items.length()
   for i = 0; i < items.length(); i = i + 1 {
-    remaining.push((items[i], i))
+    let item_id = if has_custom_ids { ids[i] } else { i }
+    remaining.push((items[i], item_id))
   }
 
   // Sort descending by area
@@ -202,6 +227,7 @@ fn AtlasPacker::pack_fixed_bins(
 pub fn AtlasPacker::pack_skyline(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   heuristic~ : SkylineHeuristic = SkylineHeuristic::BottomLeft,
 ) -> AtlasResult {
   if items.length() == 0 {
@@ -209,12 +235,13 @@ pub fn AtlasPacker::pack_skyline(
   }
 
   if self.options.auto_grow_pot {
-    self.pack_skyline_auto_grow(items, heuristic~)
+    self.pack_skyline_auto_grow(items, ids~, heuristic~)
   } else {
     self.pack_skyline_fixed_bins(
       items,
       self.options.max_width,
       self.options.max_height,
+      ids~,
       heuristic~,
     )
   }
@@ -224,6 +251,7 @@ pub fn AtlasPacker::pack_skyline(
 fn AtlasPacker::pack_skyline_auto_grow(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   heuristic~ : SkylineHeuristic,
 ) -> AtlasResult {
   let pot_sizes = [64, 128, 256, 512, 1024, 2048, 4096]
@@ -234,6 +262,7 @@ fn AtlasPacker::pack_skyline_auto_grow(
         items,
         dim,
         dim,
+        ids~,
         heuristic~,
         single_page_only=true,
       )
@@ -247,6 +276,7 @@ fn AtlasPacker::pack_skyline_auto_grow(
     items,
     self.options.max_width,
     self.options.max_height,
+    ids~,
     heuristic~,
   )
 }
@@ -257,6 +287,7 @@ fn AtlasPacker::pack_skyline_fixed_bins(
   items : Array[Size],
   bin_w : Int32,
   bin_h : Int32,
+  ids~ : Array[Int32] = [],
   heuristic~ : SkylineHeuristic,
   single_page_only~ : Bool = false,
 ) -> AtlasResult {
@@ -268,8 +299,10 @@ fn AtlasPacker::pack_skyline_fixed_bins(
   }
 
   let remaining = []
+  let has_custom_ids = ids.length() == items.length()
   for i = 0; i < items.length(); i = i + 1 {
-    remaining.push((items[i], i))
+    let item_id = if has_custom_ids { ids[i] } else { i }
+    remaining.push((items[i], item_id))
   }
 
   for i = 1; i < remaining.length(); i = i + 1 {
@@ -366,6 +399,7 @@ fn AtlasPacker::pack_skyline_fixed_bins(
 pub fn AtlasPacker::pack_guillotine(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   merge~ : Bool = true,
   rect_choice~ : GuillotineHeuristic = GuillotineHeuristic::BestShortSideFit,
   split_method~ : SplitHeuristic = SplitHeuristic::ShorterLeftoverAxis,
@@ -375,12 +409,19 @@ pub fn AtlasPacker::pack_guillotine(
   }
 
   if self.options.auto_grow_pot {
-    self.pack_guillotine_auto_grow(items, merge~, rect_choice~, split_method~)
+    self.pack_guillotine_auto_grow(
+      items,
+      ids~,
+      merge~,
+      rect_choice~,
+      split_method~,
+    )
   } else {
     self.pack_guillotine_fixed_bins(
       items,
       self.options.max_width,
       self.options.max_height,
+      ids~,
       merge~,
       rect_choice~,
       split_method~,
@@ -392,6 +433,7 @@ pub fn AtlasPacker::pack_guillotine(
 fn AtlasPacker::pack_guillotine_auto_grow(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   merge~ : Bool,
   rect_choice~ : GuillotineHeuristic,
   split_method~ : SplitHeuristic,
@@ -404,6 +446,7 @@ fn AtlasPacker::pack_guillotine_auto_grow(
         items,
         dim,
         dim,
+        ids~,
         merge~,
         rect_choice~,
         split_method~,
@@ -419,6 +462,7 @@ fn AtlasPacker::pack_guillotine_auto_grow(
     items,
     self.options.max_width,
     self.options.max_height,
+    ids~,
     merge~,
     rect_choice~,
     split_method~,
@@ -431,6 +475,7 @@ fn AtlasPacker::pack_guillotine_fixed_bins(
   items : Array[Size],
   bin_w : Int32,
   bin_h : Int32,
+  ids~ : Array[Int32] = [],
   merge~ : Bool,
   rect_choice~ : GuillotineHeuristic,
   split_method~ : SplitHeuristic,
@@ -444,8 +489,10 @@ fn AtlasPacker::pack_guillotine_fixed_bins(
   }
 
   let remaining = []
+  let has_custom_ids = ids.length() == items.length()
   for i = 0; i < items.length(); i = i + 1 {
-    remaining.push((items[i], i))
+    let item_id = if has_custom_ids { ids[i] } else { i }
+    remaining.push((items[i], item_id))
   }
 
   for i = 1; i < remaining.length(); i = i + 1 {
@@ -482,6 +529,7 @@ fn AtlasPacker::pack_guillotine_fixed_bins(
         merge~,
         rect_choice~,
         split_method~,
+        allow_rotation=self.options.allow_rotation,
       )
 
       match inserted {
@@ -543,6 +591,7 @@ fn AtlasPacker::pack_guillotine_fixed_bins(
 pub fn AtlasPacker::pack_shelf(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   heuristic~ : ShelfHeuristic = ShelfHeuristic::BestAreaFit,
 ) -> AtlasResult {
   if items.length() == 0 {
@@ -550,12 +599,13 @@ pub fn AtlasPacker::pack_shelf(
   }
 
   if self.options.auto_grow_pot {
-    self.pack_shelf_auto_grow(items, heuristic~)
+    self.pack_shelf_auto_grow(items, ids~, heuristic~)
   } else {
     self.pack_shelf_fixed_bins(
       items,
       self.options.max_width,
       self.options.max_height,
+      ids~,
       heuristic~,
     )
   }
@@ -565,6 +615,7 @@ pub fn AtlasPacker::pack_shelf(
 fn AtlasPacker::pack_shelf_auto_grow(
   self : AtlasPacker,
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   heuristic~ : ShelfHeuristic,
 ) -> AtlasResult {
   let pot_sizes = [64, 128, 256, 512, 1024, 2048, 4096]
@@ -575,6 +626,7 @@ fn AtlasPacker::pack_shelf_auto_grow(
         items,
         dim,
         dim,
+        ids~,
         heuristic~,
         single_page_only=true,
       )
@@ -588,6 +640,7 @@ fn AtlasPacker::pack_shelf_auto_grow(
     items,
     self.options.max_width,
     self.options.max_height,
+    ids~,
     heuristic~,
   )
 }
@@ -598,6 +651,7 @@ fn AtlasPacker::pack_shelf_fixed_bins(
   items : Array[Size],
   bin_w : Int32,
   bin_h : Int32,
+  ids~ : Array[Int32] = [],
   heuristic~ : ShelfHeuristic,
   single_page_only~ : Bool = false,
 ) -> AtlasResult {
@@ -609,8 +663,10 @@ fn AtlasPacker::pack_shelf_fixed_bins(
   }
 
   let remaining = []
+  let has_custom_ids = ids.length() == items.length()
   for i = 0; i < items.length(); i = i + 1 {
-    remaining.push((items[i], i))
+    let item_id = if has_custom_ids { ids[i] } else { i }
+    remaining.push((items[i], item_id))
   }
 
   for i = 1; i < remaining.length(); i = i + 1 {
@@ -742,6 +798,7 @@ fn is_better_result(cand : AtlasResult, best : AtlasResult) -> Bool {
 /// Returns the winning `AtlasResult` and the name of the winning algorithm.
 pub fn best_pack(
   items : Array[Size],
+  ids~ : Array[Int32] = [],
   max_width~ : Int32 = 2048,
   max_height~ : Int32 = 2048,
   padding~ : Int32 = 2,
@@ -805,7 +862,7 @@ pub fn best_pack(
       heuristic,
     }
     let packer = AtlasPacker::new(options=opts)
-    let res = packer.pack(items)
+    let res = packer.pack(items, ids~)
 
     match best_result {
       None => {
@@ -834,7 +891,7 @@ pub fn best_pack(
 
   for h in skyline_heuristics {
     let (heuristic, name) = h
-    let res = arena_packer.pack_skyline(items, heuristic~)
+    let res = arena_packer.pack_skyline(items, ids~, heuristic~)
 
     match best_result {
       None => {
@@ -852,7 +909,12 @@ pub fn best_pack(
   // Guillotine arena
   for h in guillotine_heuristics {
     let (rect_choice, name) = h
-    let res = arena_packer.pack_guillotine(items, merge=true, rect_choice~)
+    let res = arena_packer.pack_guillotine(
+      items,
+      ids~,
+      merge=true,
+      rect_choice~,
+    )
 
     match best_result {
       None => {
@@ -870,7 +932,7 @@ pub fn best_pack(
   // Shelf arena
   for h in shelf_heuristics {
     let (heuristic, name) = h
-    let res = arena_packer.pack_shelf(items, heuristic~)
+    let res = arena_packer.pack_shelf(items, ids~, heuristic~)
 
     match best_result {
       None => {
