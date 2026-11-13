@@ -1,13 +1,15 @@
 ///|
 /// A horizontal shelf in the bin.
+#derive(Eq, Debug)
 struct Shelf {
   mut x : Int32
   y : Int32
   height : Int32
-} derive(Eq, Debug)
+}
 
 ///|
 /// 2D bin packer based on horizontal shelves.
+#derive(Debug)
 pub struct ShelfPacker {
   bin_width : Int32
   bin_height : Int32
@@ -15,7 +17,7 @@ pub struct ShelfPacker {
   used_rectangles : Array[Rect]
   mut current_y : Int32
   mut used_surface_area : Int32
-} derive(Debug)
+}
 
 ///|
 pub fn ShelfPacker::new(bin_width : Int32, bin_height : Int32) -> ShelfPacker {

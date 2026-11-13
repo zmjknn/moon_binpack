@@ -1,9 +1,10 @@
 ///|
 /// Represents a 2D size with integer width and height.
+#derive(Eq, Debug, Default)
 pub(all) struct Size {
   width : Int32
   height : Int32
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn Size::new(width : Int32, height : Int32) -> Size {
@@ -17,10 +18,11 @@ pub fn Size::area(self : Size) -> Int32 {
 
 ///|
 /// Represents a target bin with width and height boundaries.
+#derive(Eq, Debug, Default)
 pub(all) struct Bin {
   width : Int32
   height : Int32
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn Bin::new(width : Int32, height : Int32) -> Bin {
@@ -35,6 +37,7 @@ pub fn Bin::area(self : Bin) -> Int32 {
 ///|
 /// Represents a 2D rectangle with position (x, y), dimensions (width, height),
 /// an optional identifier, rotation flag, and bin page index.
+#derive(Eq, Debug, Default)
 pub(all) struct Rect {
   x : Int32
   y : Int32
@@ -43,7 +46,7 @@ pub(all) struct Rect {
   id : Int32
   rotated : Bool
   bin_index : Int32
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn Rect::new(
@@ -120,12 +123,13 @@ pub fn Rect::intersection(self : Rect, other : Rect) -> Rect? {
 
 ///|
 /// Normalized UV texture coordinates in [0.0, 1.0] for GPU rendering pipelines.
+#derive(Eq, Debug, Default)
 pub(all) struct UvRect {
   u_min : Double
   v_min : Double
   u_max : Double
   v_max : Double
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn UvRect::new(
@@ -191,16 +195,18 @@ pub fn Rect::to_uv(
 
 ///|
 /// Heuristic options for MaxRects bin packing algorithm.
+#derive(Eq, Debug)
 pub(all) enum MaxRectsHeuristic {
   BestShortSideFit
   BestLongSideFit
   BestAreaFit
   BottomLeftRule
   ContactPointRule
-} derive(Eq, Debug)
+}
 
 ///|
 /// Free rectangle choice heuristics for Guillotine bin packing algorithm.
+#derive(Eq, Debug)
 pub(all) enum GuillotineHeuristic {
   BestAreaFit
   BestShortSideFit
@@ -208,10 +214,11 @@ pub(all) enum GuillotineHeuristic {
   WorstAreaFit
   WorstShortSideFit
   WorstLongSideFit
-} derive(Eq, Debug)
+}
 
 ///|
 /// Split heuristics for Guillotine cut algorithm.
+#derive(Eq, Debug)
 pub(all) enum SplitHeuristic {
   ShorterLeftoverAxis
   LongerLeftoverAxis
@@ -219,27 +226,30 @@ pub(all) enum SplitHeuristic {
   MaximizeArea
   ShorterAxis
   LongerAxis
-} derive(Eq, Debug)
+}
 
 ///|
 /// Heuristics for Shelf bin packing algorithm.
+#derive(Eq, Debug)
 pub(all) enum ShelfHeuristic {
   NextFit
   FirstFit
   BestAreaFit
   BestHeightFit
   WorstAreaFit
-} derive(Eq, Debug)
+}
 
 ///|
 /// Heuristics for Skyline bin packing algorithm.
+#derive(Eq, Debug)
 pub(all) enum SkylineHeuristic {
   BottomLeft
   MinWasteFit
-} derive(Eq, Debug)
+}
 
 ///|
 /// Packing performance and occupancy statistics.
+#derive(Eq, Debug, Default)
 pub(all) struct PackingStats {
   total_items : Int32
   packed_items : Int32
@@ -248,7 +258,7 @@ pub(all) struct PackingStats {
   used_area : Int32
   occupancy : Double
   bins_used : Int32
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn PackingStats::compute(

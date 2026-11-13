@@ -1,11 +1,12 @@
 ///|
 /// 2D bin packer based on the Maximal Rectangles (MaxRects) algorithm.
+#derive(Debug)
 pub struct MaxRectsPacker {
   bin_width : Int32
   bin_height : Int32
   free_rectangles : Array[Rect]
   used_rectangles : Array[Rect]
-} derive(Debug)
+}
 
 ///|
 pub fn MaxRectsPacker::new(

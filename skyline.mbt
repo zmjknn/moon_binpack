@@ -1,10 +1,11 @@
 ///|
 /// A horizontal segment in the Skyline bin packing algorithm.
+#derive(Eq, Debug, Default)
 pub(all) struct SkylineNode {
   x : Int32
   y : Int32
   width : Int32
-} derive(Eq, Debug, Default)
+}
 
 ///|
 pub fn SkylineNode::new(x : Int32, y : Int32, width : Int32) -> SkylineNode {
@@ -13,13 +14,14 @@ pub fn SkylineNode::new(x : Int32, y : Int32, width : Int32) -> SkylineNode {
 
 ///|
 /// 2D bin packer based on the Skyline algorithm with Min-Waste and Bottom-Left heuristics.
+#derive(Debug)
 pub struct SkylinePacker {
   bin_width : Int32
   bin_height : Int32
   skyline : Array[SkylineNode]
   used_rectangles : Array[Rect]
   mut used_surface_area : Int32
-} derive(Debug)
+}
 
 ///|
 pub fn SkylinePacker::new(
