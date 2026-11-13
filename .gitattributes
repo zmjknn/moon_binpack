@@ -1,0 +1,5 @@
+# GitHub Linguist overrides
+# Prevent moon.mod from being misidentified by GitHub Linguist as AMPL
+moon.mod linguist-detectable=false
+*.mod linguist-detectable=false
+*.mbt linguist-language=MoonBit
