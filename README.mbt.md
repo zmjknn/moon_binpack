@@ -3,7 +3,7 @@
 [![CI](https://github.com/zmjknn/moon_binpack/actions/workflows/ci.yml/badge.svg)](https://github.com/zmjknn/moon_binpack/actions/workflows/ci.yml)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20261016-purple.svg)](https://www.moonbitlang.com)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-48%20passed-brightgreen.svg)](https://github.com/zmjknn/moon_binpack)
+[![Tests](https://img.shields.io/badge/Tests-53%20passed-brightgreen.svg)](https://github.com/zmjknn/moon_binpack)
 [![Dependencies](https://img.shields.io/badge/Dependencies-Zero-success.svg)](moon.mod)
 
 `moon_binpack` is an industrial-grade, zero-dependency 2D rectangle bin packing and anti-bleeding texture atlas baking engine implemented in 100% pure [MoonBit](https://www.moonbitlang.com).
@@ -135,6 +135,7 @@ let uv_webgpu = page0.uv_frames[0]
 
 ```moonbit nocheck
 // Scalable SVG preview
+
 ///|
 let svg = @moon_binpack.to_svg(512, 512, best_res.rects, title="Atlas Preview")
 
@@ -192,7 +193,7 @@ moon test
 Result:
 
 ```text
-Total tests: 48, passed: 48, failed: 0.
+Total tests: 53, passed: 53, failed: 0.
 ```
 
 ---
